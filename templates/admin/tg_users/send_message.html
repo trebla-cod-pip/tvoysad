@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Написать пользователю: {{ tg_user }}</h1>
+{% if tg_user.photo_url %}
+  <img src="{{ tg_user.photo_url }}" style="width:64px;height:64px;border-radius:50%;margin-bottom:16px">
+{% endif %}
+<p><b>Telegram ID:</b> {{ tg_user.tg_id }}</p>
+{% if tg_user.username %}<p><b>Username:</b> <a href="https://t.me/{{ tg_user.username }}" target="_blank">@{{ tg_user.username }}</a></p>{% endif %}
+<p><b>Платформа:</b> {{ tg_user.platform }}</p>
+<br>
+<form method="post">
+  {% csrf_token %}
+  <div style="margin-bottom:16px">
+    <label style="display:block;font-weight:bold;margin-bottom:8px">Текст сообщения (поддерживается HTML)</label>
+    <textarea name="text" rows="6" style="width:100%;max-width:600px;padding:8px;font-size:14px" required></textarea>
+  </div>
+  <input type="submit" value="Отправить" class="default">
+  &nbsp;
+  <a href="{% url 'admin:tg_users_telegramuser_change' tg_user.pk %}">Отмена</a>
+</form>
+{% endblock %}

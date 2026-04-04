@@ -22,7 +22,10 @@ INSTALLED_APPS = [
     'orders',
     'pages',
     'reviews',
+    'tg_users',
 ]
+
+TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN', '')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

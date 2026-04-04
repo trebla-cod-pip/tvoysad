@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('catalog.urls')),
     path('', include('pages.urls')),
     path('api/', include('reviews.urls')),
+    path('api/', include('tg_users.urls')),
 ]
 
 if settings.DEBUG:

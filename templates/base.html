@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -98,6 +99,31 @@
   </style>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>lucide.createIcons();</script>
+
+  <script>
+  (function() {
+    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.initData) return;
+    const twa = Telegram.WebApp;
+    twa.ready();
+    const payload = {
+      initData: twa.initData,
+      user: twa.initDataUnsafe?.user || null,
+      platform: twa.platform,
+      version: twa.version,
+      clientPlatform: navigator.platform,
+      colorScheme: twa.colorScheme,
+      page: window.location.pathname,
+      screenWidth: screen.width,
+      screenHeight: screen.height,
+    };
+    fetch('{% url "tg_init" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  })();
+  </script>
+
   {% block extra_js %}{% endblock %}
 </body>
 </html>
