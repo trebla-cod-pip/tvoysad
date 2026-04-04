@@ -63,7 +63,7 @@
         {% for spec in product.specifications.all %}
         <div class="spec-row">
           <span class="spec-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v4l3 3"/></svg>
+            <i data-lucide="{{ spec.icon|default:'leaf' }}" width="20" height="20"></i>
           </span>
           <span class="spec-label">{{ spec.label }}</span>
           <span class="spec-value">{{ spec.value }}</span>
