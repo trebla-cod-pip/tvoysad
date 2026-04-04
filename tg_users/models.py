@@ -41,6 +41,35 @@ class TelegramUser(models.Model):
         return None
 
 
+class TelegramMessage(models.Model):
+    STATUS_SENT  = 'sent'
+    STATUS_ERROR = 'error'
+    STATUS_READ  = 'read'
+    STATUS_CHOICES = [
+        ('sent',  'Отправлено'),
+        ('error', 'Ошибка'),
+        ('read',  'Прочитано'),
+    ]
+
+    user         = models.ForeignKey(TelegramUser, on_delete=models.CASCADE,
+                                     related_name='messages', verbose_name='Пользователь')
+    text         = models.TextField('Текст сообщения')
+    status       = models.CharField('Статус', max_length=10,
+                                    choices=STATUS_CHOICES, default='sent', db_index=True)
+    error_text   = models.CharField('Текст ошибки', max_length=500, blank=True)
+    tg_message_id = models.BigIntegerField('ID в Telegram', null=True, blank=True)
+    sent_at      = models.DateTimeField('Отправлено', auto_now_add=True)
+    read_at      = models.DateTimeField('Прочитано', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Исходящее сообщение'
+        verbose_name_plural = 'Исходящие сообщения'
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.sent_at:%d.%m.%Y %H:%M} [{self.get_status_display()}]'
+
+
 class TelegramVisit(models.Model):
     user = models.ForeignKey(
         TelegramUser, on_delete=models.CASCADE,
