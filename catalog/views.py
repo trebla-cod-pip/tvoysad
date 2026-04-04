@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -97,6 +97,7 @@ def item(request, slug):
     })
 
 
+@ensure_csrf_cookie
 def bag(request):
     cart = get_cart(request)
     items = []

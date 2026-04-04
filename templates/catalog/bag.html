@@ -8,6 +8,7 @@
   <h1 class="page-title" style="padding:32px 0 24px">Корзина</h1>
 
   {% if items %}
+  <form id="csrf-form" style="display:none">{% csrf_token %}</form>
   <div class="bag-layout">
     <div>
       {% for item in items %}
@@ -66,23 +67,28 @@
 const prices = { {% for item in items %}'{{ item.product.slug }}': {{ item.product.price }},{% endfor %} };
 
 async function updateQty(slug, delta) {
-  const el = document.getElementById('qty-' + slug);
-  const newQty = Math.max(1, parseInt(el.textContent) + delta);
-  el.textContent = newQty;
-  const data = await apiPost('{% url "cart_update" %}', {slug, qty: newQty});
-  updateCartBadge(data.count);
-  const subtotal = (prices[slug] * newQty).toFixed(0);
-  document.getElementById('subtotal-' + slug).textContent = subtotal + ' ₽';
-  document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
-  document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
+  try {
+    const el = document.getElementById('qty-' + slug);
+    const newQty = Math.max(1, parseInt(el.textContent) + delta);
+    el.textContent = newQty;
+    const data = await apiPost('{% url "cart_update" %}', {slug, qty: newQty});
+    updateCartBadge(data.count);
+    const subtotal = (prices[slug] * newQty).toFixed(0);
+    document.getElementById('subtotal-' + slug).textContent = subtotal + ' ₽';
+    document.getElementById('price-' + slug).textContent = subtotal + ' ₽';
+    document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
+    document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
+  } catch(e) { console.error('updateQty error:', e); }
 }
 
 async function removeItem(slug) {
-  await apiPost('{% url "cart_remove" %}', {slug});
-  const row = document.getElementById('cart-row-' + slug);
-  row.style.opacity = '0';
-  row.style.transition = 'opacity .3s';
-  setTimeout(() => { row.remove(); location.reload(); }, 300);
+  try {
+    await apiPost('{% url "cart_remove" %}', {slug});
+    const row = document.getElementById('cart-row-' + slug);
+    row.style.opacity = '0';
+    row.style.transition = 'opacity .3s';
+    setTimeout(() => { row.remove(); location.reload(); }, 300);
+  } catch(e) { console.error('removeItem error:', e); }
 }
 </script>
 {% endblock %}
