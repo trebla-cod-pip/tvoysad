@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Твой Сад — саженцы плодовых и декоративных растений{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">
+          <span class="badge badge--muted">🌱 Питомник</span>
+        </div>
+        <h1 class="hero-title">Создайте сад<br>своей мечты</h1>
+        <p class="hero-subtitle">Саженцы плодовых и ягодных культур с гарантией приживаемости. Выращиваем в собственном питомнике, доставляем бережно.</p>
+        <div class="hero-actions">
+          <a href="{% url 'catalog' %}" class="btn btn--primary btn--large">Перейти в каталог</a>
+          <a href="{% url 'contacts' %}" class="btn btn--outline btn--large">Консультация</a>
+        </div>
+      </div>
+      <div class="hero-img">
+        {% if site_settings.hero_image %}
+          <img src="{{ site_settings.hero_image.url }}" alt="Твой Сад">
+        {% else %}
+          <div class="hero-img-placeholder" style="min-height:400px; background:var(--secondary); border-radius:var(--radius-xl); display:flex; align-items:center; justify-content:center; color:var(--muted-foreground); font-size:80px;">🌳</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Категории</h2>
+      <a href="{% url 'catalog' %}" class="section-link">Все товары →</a>
+    </div>
+    {% if categories %}
+    <div class="categories-grid">
+      {% for cat in categories %}
+      <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="category-card">
+        {% if cat.image %}
+          <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+        {% else %}
+          <div style="width:100%;height:100%;background:var(--secondary);display:flex;align-items:center;justify-content:center;font-size:48px;">
+            {% if forloop.counter == 1 %}🍎{% elif forloop.counter == 2 %}🍐{% elif forloop.counter == 3 %}🍒{% else %}🌸{% endif %}
+          </div>
+        {% endif %}
+        <div class="category-card__overlay">
+          <div class="category-card__name">{{ cat.name }}</div>
+          <div class="category-card__count">{{ cat.get_products_count }} шт</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Featured products -->
+<section class="section" style="background:var(--muted); padding:80px 0;">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Рекомендуемые саженцы</h2>
+      <a href="{% url 'catalog' %}?featured=1" class="section-link">Смотреть все →</a>
+    </div>
+    {% if featured_products %}
+    <div class="products-grid">
+      {% for product in featured_products %}
+      {% include 'components/product_card.html' %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted" style="text-align:center; padding:40px 0;">Пока нет рекомендуемых товаров. Добавьте их через <a href="/admin/">админку</a>.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title" style="text-align:center; margin-bottom:48px;">Почему выбирают нас</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div class="feature-title">Бережная доставка</div>
+        <div class="feature-desc">Специальная упаковка защищает корневую систему при транспортировке</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="feature-title">Гарантия качества</div>
+        <div class="feature-desc">100% гарантия приживаемости всех саженцев из нашего питомника</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="feature-title">Быстрая обработка</div>
+        <div class="feature-desc">Заказ обрабатывается в течение 24 часов</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="feature-title">Консультация</div>
+        <div class="feature-desc">Агрономы помогут подобрать саженцы для вашего участка</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2 class="cta-title">Нужна консультация?</h2>
+    <p class="cta-desc">Поможем подобрать саженцы для вашего участка с учётом климата и почвы</p>
+    <a href="{% url 'contacts' %}" class="btn btn--white btn--large">Связаться с нами</a>
+  </div>
+</section>
+
+{% endblock %}

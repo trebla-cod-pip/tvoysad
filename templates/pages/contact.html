@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Контакты — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Контакты</h1>
+    <p class="page-subtitle">Мы всегда на связи и готовы помочь вам с выбором саженцев</p>
+  </div>
+
+  <div class="contact-layout">
+    <div>
+      <div class="contact-cards">
+        <div class="contact-card">
+          <div class="contact-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="contact-card-title">Телефон</div>
+          <div class="contact-card-text">+7 (999) 123-45-67<br>Ежедневно: 9:00–20:00</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="contact-card-title">Почта</div>
+          <div class="contact-card-text">hello@tvoysad.ru<br>Отвечаем за 2 часа</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="contact-card-title">Питомник</div>
+          <div class="contact-card-text">Московская область,<br>г. Сергиев Посад</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <div class="contact-card-title">Доставка</div>
+          <div class="contact-card-text">+7 (999) 987-65-43<br>Вопросы по заказам</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form">
+      {% if success %}
+      <div class="success-msg">✅ Сообщение отправлено! Мы свяжемся с вами в ближайшее время.</div>
+      {% endif %}
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:20px">Напишите нам</h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Ваше имя</label>
+          <input type="text" name="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Телефон или Email</label>
+          <input type="text" name="contact" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Сообщение</label>
+          <textarea name="message" class="form-input" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full btn--large">Отправить</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

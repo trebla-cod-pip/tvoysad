@@ -1,0 +1,78 @@
+{% load static %}
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="{% url 'home' %}" class="logo">
+        <span style="font-size:20px;line-height:1">🌳</span>
+        Твой Сад
+      </a>
+
+      <nav class="nav-links">
+        <a href="{% url 'catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Каталог</a>
+        <a href="{% url 'delivery' %}" class="nav-link {% if request.resolver_match.url_name == 'delivery' %}active{% endif %}">Доставка</a>
+        <a href="{% url 'contacts' %}" class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}">Контакты</a>
+      </nav>
+
+      <div class="header-actions">
+        <form class="search-bar" action="{% url 'catalog' %}" method="get">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" name="q" placeholder="Поиск саженцев..." value="{{ request.GET.q|default:'' }}">
+        </form>
+
+        <a href="{% url 'favorites' %}" class="action-btn" title="Избранное">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </a>
+
+        <a href="{% url 'bag' %}" class="action-btn" title="Корзина">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="cart-badge cart-count" style="display:{% if cart_count > 0 %}flex{% else %}none{% endif %}">{{ cart_count }}</span>
+        </a>
+
+        <!-- Бургер (только мобильный) -->
+        <button class="burger-btn" id="burgerBtn" aria-label="Меню">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Мобильное меню -->
+  <div class="mobile-menu" id="mobileMenu">
+    <nav class="mobile-nav">
+      <a href="{% url 'catalog' %}" class="mobile-nav-link">Каталог</a>
+      <a href="{% url 'delivery' %}" class="mobile-nav-link">Доставка и оплата</a>
+      <a href="{% url 'contacts' %}" class="mobile-nav-link">Контакты</a>
+      <a href="{% url 'favorites' %}" class="mobile-nav-link">Избранное</a>
+    </nav>
+    <form class="mobile-search" action="{% url 'catalog' %}" method="get">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" name="q" placeholder="Поиск саженцев..." value="{{ request.GET.q|default:'' }}">
+    </form>
+  </div>
+</header>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => {
+    burger.classList.toggle('open');
+    menu.classList.toggle('open');
+    document.body.classList.toggle('menu-open');
+  });
+  // Закрыть при клике на ссылку
+  menu.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      burger.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.classList.remove('menu-open');
+    });
+  });
+</script>

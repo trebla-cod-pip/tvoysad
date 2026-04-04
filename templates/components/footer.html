@@ -1,0 +1,50 @@
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22V12M12 12C12 8 9 5 5 5C5 9 8 12 12 12ZM12 12C12 8 15 5 19 5C19 9 16 12 12 12Z"/>
+          </svg>
+          Твой Сад
+        </div>
+        <p class="footer-desc">Ваш надёжный питомник саженцев плодовых и декоративных растений. Выращиваем с любовью, доставляем с заботой.</p>
+      </div>
+
+      <div>
+        <p class="footer-col-title">Каталог</p>
+        <nav class="footer-links">
+          <a href="{% url 'catalog' %}?category=yabloni">Яблони</a>
+          <a href="{% url 'catalog' %}?category=grushi">Груши</a>
+          <a href="{% url 'catalog' %}?category=slivy">Сливы</a>
+          <a href="{% url 'catalog' %}?category=vishni">Вишни</a>
+          <a href="{% url 'catalog' %}">Все растения</a>
+        </nav>
+      </div>
+
+      <div>
+        <p class="footer-col-title">Покупателям</p>
+        <nav class="footer-links">
+          <a href="{% url 'delivery' %}">Доставка</a>
+          <a href="{% url 'delivery' %}#guarantee">Гарантия</a>
+          <a href="{% url 'delivery' %}#return">Советы</a>
+          <a href="{% url 'contacts' %}">FAQ</a>
+        </nav>
+      </div>
+
+      <div>
+        <p class="footer-col-title">Контакты</p>
+        <div class="footer-contact">
+          <div>+7 (999) 123-45-67</div>
+          <div><a href="mailto:hello@tvoysad.ru">hello@tvoysad.ru</a></div>
+          <div>Ежедневно: 9:00–20:00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Твой Сад. Все права защищены.</span>
+      <a href="{% url 'page_detail' 'privacy' %}" style="color:rgba(255,255,255,.5)">Конфиденциальность</a>
+    </div>
+  </div>
+</footer>

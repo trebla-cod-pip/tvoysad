@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="breadcrumbs">
+    <a href="{% url 'home' %}">Главная</a> /
+    <a href="{% url 'catalog' %}">Каталог</a>
+    {% if product.category %} / <a href="{% url 'catalog' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>{% endif %}
+    / <span>{{ product.name }}</span>
+  </div>
+
+  <div class="item-layout">
+    <!-- Gallery -->
+    <div class="gallery">
+      <div class="gallery-main" id="mainImg">
+        {% if product.images.all %}
+          <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" id="mainImgEl">
+        {% elif product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImgEl">
+        {% else %}
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:96px;background:var(--secondary);">🌱</div>
+        {% endif %}
+      </div>
+      {% if product.images.count > 1 %}
+      <div class="gallery-thumbs">
+        {% for img in product.images.all %}
+        <div class="gallery-thumb {% if forloop.first %}active{% endif %}" onclick="switchImage('{{ img.image.url }}', this)">
+          <img src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div>
+      {% if product.category %}<div class="item-category">{{ product.category.name }}</div>{% endif %}
+      <h1 class="item-name">{{ product.name }}</h1>
+
+      {% if product.rating_count %}
+      <div class="item-rating">
+        ★ {{ product.rating }} <span style="color:var(--muted-foreground);font-size:14px">({{ product.rating_count }} отзывов)</span>
+      </div>
+      {% endif %}
+
+      <div class="item-price-block">
+        <span class="item-price">{{ product.price|floatformat:0 }} ₽</span>
+        {% if product.old_price %}
+          <span class="item-old-price">{{ product.old_price|floatformat:0 }} ₽</span>
+          <span class="badge badge--sale">-{{ product.discount_percent }}%</span>
+        {% endif %}
+      </div>
+
+      {% if product.description %}
+      <p style="font-size:15px; line-height:1.7; color:var(--muted-foreground); margin-bottom:20px;">{{ product.description }}</p>
+      {% endif %}
+
+      {% if product.specifications.all %}
+      <div class="specifications">
+        {% for spec in product.specifications.all %}
+        <div class="spec-row">
+          <span class="spec-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 8v4l3 3"/></svg>
+          </span>
+          <span class="spec-label">{{ spec.label }}</span>
+          <span class="spec-value">{{ spec.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-val" id="qty">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+
+      <button class="btn btn--primary btn--large btn--full" onclick="addToCartWithQty('{{ product.slug }}')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        Купить саженец
+      </button>
+
+      <div class="item-guarantees">
+        <div class="guarantee-row">
+          <span>🛡</span> <span>Гарантия приживаемости 100%</span>
+        </div>
+        <div class="guarantee-row">
+          <span>📦</span> <span>Бережная упаковка при доставке</span>
+        </div>
+        {% if product.stock < 10 %}
+        <div class="guarantee-row" style="color:var(--destructive)">
+          <span>⚠️</span> <span>Осталось {{ product.stock }} шт — торопитесь!</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Care tips -->
+  {% if product.care_tips %}
+  <hr class="divider">
+  <div class="care-section">
+    <h3 class="care-title">💡 Советы по уходу</h3>
+    <div class="care-text">{{ product.care_tips|linebreaks }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Related products -->
+  {% if related_products %}
+  <hr class="divider">
+  <h3 class="section-title" style="margin-bottom:24px">Вам также может понравиться</h3>
+  <div class="products-grid">
+    {% for product in related_products %}
+    {% include 'components/product_card.html' %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Reviews -->
+  <hr class="divider">
+  <div class="reviews-section">
+    <h3 class="section-title" style="margin-bottom:24px">Отзывы покупателей {% if reviews %}({{ reviews|length }}){% endif %}</h3>
+    {% for review in reviews %}
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-author">{{ review.name }}</span>
+        <span class="review-date">{{ review.created_at|date:"d E Y" }}</span>
+      </div>
+      <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+      <div class="review-text">{{ review.text }}</div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+    {% endfor %}
+
+    <div class="review-form">
+      <h4 style="font-size:16px; font-weight:600; margin-bottom:20px">Написать отзыв</h4>
+      <form id="reviewForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Ваше имя</label>
+          <input type="text" name="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Оценка</label>
+          <div class="star-rating" id="starRating">
+            <input type="radio" name="rating" id="s5" value="5"><label for="s5">★</label>
+            <input type="radio" name="rating" id="s4" value="4"><label for="s4">★</label>
+            <input type="radio" name="rating" id="s3" value="3"><label for="s3">★</label>
+            <input type="radio" name="rating" id="s2" value="2"><label for="s2">★</label>
+            <input type="radio" name="rating" id="s1" value="1"><label for="s1">★</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ваш отзыв</label>
+          <textarea name="text" class="form-input" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary">Отправить отзыв</button>
+      </form>
+      <div id="reviewSuccess" style="display:none" class="success-msg">Спасибо! Отзыв отправлен на модерацию.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function changeQty(delta) {
+  const el = document.getElementById('qty');
+  const v = Math.max(1, parseInt(el.textContent) + delta);
+  el.textContent = v;
+}
+function addToCartWithQty(slug) {
+  const qty = parseInt(document.getElementById('qty').textContent);
+  addToCart(slug, qty);
+}
+function switchImage(url, thumb) {
+  document.getElementById('mainImgEl').src = url;
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+}
+document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const fd = new FormData(this);
+  const data = {
+    name: fd.get('name'),
+    rating: fd.get('rating') || 5,
+    text: fd.get('text'),
+    product_slug: '{{ product.slug }}'
+  };
+  await apiPost('/api/reviews/', data);
+  document.getElementById('reviewForm').style.display = 'none';
+  document.getElementById('reviewSuccess').style.display = 'block';
+});
+</script>
+{% endblock %}

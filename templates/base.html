@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover — Dynamic Island / notch safe areas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf8f2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>{% block title %}Твой Сад — саженцы плодовых деревьев{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  {% include 'components/header.html' %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'components/footer.html' %}
+
+  <!-- Нижняя навигация (только мобильный) -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav__items">
+      <a href="{% url 'home' %}" class="bottom-nav__item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Главная
+      </a>
+      <a href="{% url 'catalog' %}" class="bottom-nav__item {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Каталог
+      </a>
+      <a href="{% url 'favorites' %}" class="bottom-nav__item {% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Избранное
+      </a>
+      <a href="{% url 'bag' %}" class="bottom-nav__item {% if request.resolver_match.url_name == 'bag' %}active{% endif %}">
+        <span style="position:relative;display:flex">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-badge cart-count" style="display:{% if cart_count > 0 %}flex{% else %}none{% endif %};top:-4px;right:-6px">{{ cart_count }}</span>
+        </span>
+        Корзина
+      </a>
+    </div>
+  </nav>
+
+  <script>
+    async function apiPost(url, data) {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify(data)
+      });
+      return r.json();
+    }
+    function getCookie(name) {
+      let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+      return v ? v[2] : null;
+    }
+    function updateCartBadge(count) {
+      document.querySelectorAll('.cart-count').forEach(el => {
+        el.textContent = count;
+        el.style.display = count > 0 ? 'flex' : 'none';
+      });
+    }
+    async function addToCart(slug, qty = 1) {
+      const data = await apiPost('{% url "cart_add" %}', {slug, qty});
+      updateCartBadge(data.count);
+      showToast('Добавлено в корзину');
+    }
+    async function removeFromCart(slug) {
+      const data = await apiPost('{% url "cart_remove" %}', {slug});
+      updateCartBadge(data.count);
+    }
+    function showToast(msg) {
+      // Показываем над bottom nav
+      const bottomH = window.innerWidth < 1024 ? 80 : 24;
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = `position:fixed;bottom:${bottomH}px;left:50%;transform:translateX(-50%);background:#263238;color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;z-index:9999;white-space:nowrap;animation:fadeIn .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)`;
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2200);
+    }
+    async function toggleFavorite(btn, slug) {
+      const isActive = btn.classList.contains('active');
+      const url = isActive ? '/api/favorites/remove/' : '/api/favorites/add/';
+      await apiPost(url, {slug});
+      btn.classList.toggle('active');
+    }
+  </script>
+  <style>
+    @keyframes fadeIn { from { opacity:0; transform:translateX(-50%) translateY(8px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
+  </style>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

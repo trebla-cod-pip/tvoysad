@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Оформление заказа — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title" style="padding:32px 0 24px">Оформление заказа</h1>
+
+  <form method="post" class="checkout-layout">
+    {% csrf_token %}
+
+    <div>
+      <!-- Order summary -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">Ваш заказ</div>
+        {% for item in items %}
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:15px">
+          <span>{{ item.product.name }} × {{ item.qty }}</span>
+          <span style="font-weight:600">{{ item.subtotal|floatformat:0 }} ₽</span>
+        </div>
+        {% endfor %}
+        <div style="display:flex;justify-content:space-between;padding-top:16px;font-size:18px;font-weight:700;color:var(--primary)">
+          <span>Итого</span>
+          <span>{{ total|floatformat:0 }} ₽</span>
+        </div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">Контактные данные</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Имя *</label>
+            <input type="text" name="name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Телефон *</label>
+            <input type="tel" name="phone" class="form-input" required placeholder="+7 (999) 000-00-00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-input">
+        </div>
+      </div>
+
+      <!-- Delivery -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">Доставка</div>
+        <div class="form-group">
+          <label class="form-label">Адрес доставки *</label>
+          <input type="text" name="delivery_address" class="form-input" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Дата доставки</label>
+            <input type="date" name="delivery_date" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время</label>
+            <select name="delivery_time" class="form-input">
+              <option value="">Любое время</option>
+              <option value="9:00–13:00">9:00–13:00</option>
+              <option value="13:00–18:00">13:00–18:00</option>
+              <option value="18:00–21:00">18:00–21:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Комментарий к заказу</label>
+          <textarea name="comment" class="form-input" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">Способ оплаты</div>
+        <div class="payment-options">
+          <label class="payment-option active" id="pay-card" onclick="selectPayment(this, 'card')">
+            <input type="radio" name="payment_method" value="card" checked style="display:none">
+            <div class="payment-option-icon">💳</div>
+            <div class="payment-option-label">Карта</div>
+          </label>
+          <label class="payment-option" id="pay-sbp" onclick="selectPayment(this, 'sbp')">
+            <input type="radio" name="payment_method" value="sbp" style="display:none">
+            <div class="payment-option-icon">🔲</div>
+            <div class="payment-option-label">СБП</div>
+          </label>
+          <label class="payment-option" id="pay-cash" onclick="selectPayment(this, 'cash')">
+            <input type="radio" name="payment_method" value="cash" style="display:none">
+            <div class="payment-option-icon">💰</div>
+            <div class="payment-option-label">Наличные</div>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--large btn--full">Подтвердить заказ</button>
+      <p style="font-size:13px;color:var(--muted-foreground);text-align:center;margin-top:12px">
+        Нажимая кнопку, вы соглашаетесь с условиями обработки персональных данных
+      </p>
+    </div>
+  </form>
+</div>
+
+<script>
+function selectPayment(el, method) {
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  el.querySelector('input').checked = true;
+}
+</script>
+{% endblock %}

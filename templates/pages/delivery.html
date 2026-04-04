@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Доставка и оплата — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Доставка и оплата</h1>
+    <p class="page-subtitle">Мы доставляем саженцы по всей России с заботой о каждом растении</p>
+  </div>
+
+  <div class="delivery-cards">
+    <div class="delivery-card">
+      <div class="delivery-icon">🚚</div>
+      <div class="delivery-card-title">Курьерская доставка</div>
+      <div class="delivery-card-text">Доставляем по Москве и Московской области. Специальная упаковка защищает корни саженцев.</div>
+      <div class="delivery-price">от 500 ₽</div>
+    </div>
+    <div class="delivery-card">
+      <div class="delivery-icon">📍</div>
+      <div class="delivery-card-title">Самовывоз</div>
+      <div class="delivery-card-text">Забрать заказ можно из нашего питомника в Московской области. Уточняйте часы работы.</div>
+      <div class="delivery-price">Бесплатно</div>
+    </div>
+    <div class="delivery-card">
+      <div class="delivery-icon">📦</div>
+      <div class="delivery-card-title">Почта России / СДЭК</div>
+      <div class="delivery-card-text">Отправляем по всей России. Тщательно упаковываем каждый саженец.</div>
+      <div class="delivery-price">3–7 рабочих дней</div>
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-bottom:24px">Способы оплаты</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:48px">
+    <div class="delivery-card" style="text-align:center">
+      <div class="delivery-icon">💳</div>
+      <div class="delivery-card-title">Банковская карта</div>
+      <div class="delivery-card-text">Visa, MasterCard, Мир</div>
+    </div>
+    <div class="delivery-card" style="text-align:center">
+      <div class="delivery-icon">🔲</div>
+      <div class="delivery-card-title">СБП</div>
+      <div class="delivery-card-text">Система быстрых платежей</div>
+    </div>
+    <div class="delivery-card" style="text-align:center">
+      <div class="delivery-icon">💰</div>
+      <div class="delivery-card-title">Наличные</div>
+      <div class="delivery-card-text">При самовывозе или курьеру</div>
+    </div>
+  </div>
+
+  <div class="guarantee-block" id="guarantee">
+    <div class="guarantee-block-icon">🛡</div>
+    <h2 class="guarantee-block-title">Гарантия приживаемости 100%</h2>
+    <p class="guarantee-block-text">Мы гарантируем приживаемость всех саженцев из нашего питомника. Если саженец не прижился — бесплатно заменим или вернём деньги.</p>
+  </div>
+
+  <div id="return" style="margin-bottom:80px">
+    <h2 class="section-title" style="margin-bottom:16px">Возврат и обмен</h2>
+    <p style="font-size:16px;line-height:1.8;color:var(--muted-foreground)">
+      Возврат возможен в течение 14 дней с момента получения заказа при условии сохранности упаковки и корневой системы.
+      Для оформления возврата обратитесь по телефону или напишите на email — мы решим вопрос максимально быстро.
+    </p>
+  </div>
+</div>
+{% endblock %}

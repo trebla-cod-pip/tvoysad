@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="page-title" style="padding:32px 0 24px">Корзина</h1>
+
+  {% if items %}
+  <div class="bag-layout">
+    <div>
+      {% for item in items %}
+      <div class="cart-item" id="cart-row-{{ item.product.slug }}">
+        {% if item.product.image %}
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item__img">
+        {% else %}
+          <div style="width:80px;height:80px;background:var(--secondary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:32px;">🌱</div>
+        {% endif %}
+        <div>
+          <div class="cart-item__name">{{ item.product.name }}</div>
+          {% if item.product.category %}<div class="cart-item__cat">{{ item.product.category.name }}</div>{% endif %}
+          <div class="cart-item__price" id="price-{{ item.product.slug }}">{{ item.subtotal|floatformat:0 }} ₽</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <button class="qty-btn" onclick="updateQty('{{ item.product.slug }}', -1)">−</button>
+            <span id="qty-{{ item.product.slug }}">{{ item.qty }}</span>
+            <button class="qty-btn" onclick="updateQty('{{ item.product.slug }}', 1)">+</button>
+          </div>
+          <span class="cart-item__remove" onclick="removeItem('{{ item.product.slug }}', '{{ item.product.price }}')">Удалить</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap" id="subtotal-{{ item.product.slug }}">{{ item.subtotal|floatformat:0 }} ₽</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="order-summary">
+      <div class="order-summary__title">Итого</div>
+      <div class="order-summary__row">
+        <span>Товары ({{ count }} шт)</span>
+        <span id="summaryTotal">{{ total|floatformat:0 }} ₽</span>
+      </div>
+      <div class="order-summary__row">
+        <span>Доставка</span>
+        <span>Рассчитывается при оформлении</span>
+      </div>
+      <div class="order-summary__total">
+        <span>К оплате</span>
+        <span id="summaryFinal">{{ total|floatformat:0 }} ₽</span>
+      </div>
+      <a href="{% url 'checkout' %}" class="btn btn--primary btn--large btn--full" style="margin-top:20px">Оформить заказ</a>
+      <a href="{% url 'catalog' %}" class="order-link">← Продолжить покупки</a>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-state" style="padding:100px 0">
+    <div class="empty-icon">🛒</div>
+    <h3>Корзина пуста</h3>
+    <p class="text-muted" style="margin:8px 0 24px">Добавьте саженцы из каталога</p>
+    <a href="{% url 'catalog' %}" class="btn btn--primary btn--large">Перейти в каталог</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const prices = { {% for item in items %}'{{ item.product.slug }}': {{ item.product.price }},{% endfor %} };
+
+async function updateQty(slug, delta) {
+  const el = document.getElementById('qty-' + slug);
+  const newQty = Math.max(1, parseInt(el.textContent) + delta);
+  el.textContent = newQty;
+  const data = await apiPost('{% url "cart_update" %}', {slug, qty: newQty});
+  updateCartBadge(data.count);
+  const subtotal = (prices[slug] * newQty).toFixed(0);
+  document.getElementById('subtotal-' + slug).textContent = subtotal + ' ₽';
+  document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
+  document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
+}
+
+async function removeItem(slug) {
+  await apiPost('{% url "cart_remove" %}', {slug});
+  const row = document.getElementById('cart-row-' + slug);
+  row.style.opacity = '0';
+  row.style.transition = 'opacity .3s';
+  setTimeout(() => { row.remove(); location.reload(); }, 300);
+}
+</script>
+{% endblock %}

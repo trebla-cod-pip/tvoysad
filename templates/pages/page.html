@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{{ page.title }} — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 48px 0 80px; max-width: 800px">
+  <h1 class="page-title" style="margin-bottom:32px">{{ page.title }}</h1>
+  <div style="font-size:16px; line-height:1.8; color:var(--foreground)">
+    {{ page.content|safe }}
+  </div>
+</div>
+{% endblock %}

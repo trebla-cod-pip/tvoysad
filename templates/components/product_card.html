@@ -1,0 +1,46 @@
+{% load static %}
+<div class="product-card">
+  <div class="product-card__img-wrap">
+    <a href="{% url 'item' product.slug %}">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+      {% else %}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;background:var(--secondary);">🌱</div>
+      {% endif %}
+    </a>
+    <div class="product-card__badges">
+      {% if 'hit' in product.tags %}<span class="badge badge--hit">Хит</span>{% endif %}
+      {% if 'new' in product.tags %}<span class="badge badge--new">Новинка</span>{% endif %}
+      {% if product.discount_percent %}<span class="badge badge--sale">-{{ product.discount_percent }}%</span>{% endif %}
+    </div>
+    <button class="product-card__fav" onclick="toggleFavorite(this, '{{ product.slug }}')" title="В избранное">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </button>
+  </div>
+  <div class="product-card__body">
+    {% if product.category %}
+    <div class="product-card__category">{{ product.category.name }}</div>
+    {% endif %}
+    <a href="{% url 'item' product.slug %}" class="product-card__name">{{ product.name }}</a>
+    {% if product.rating_count %}
+    <div class="product-card__rating">
+      ★ {{ product.rating }}
+      <span>({{ product.rating_count }} отз.)</span>
+    </div>
+    {% endif %}
+    <div class="product-card__price">
+      <span class="product-card__price-current">{{ product.price|floatformat:0 }} ₽</span>
+      {% if product.old_price %}<span class="product-card__price-old">{{ product.old_price|floatformat:0 }} ₽</span>{% endif %}
+    </div>
+  </div>
+  <div class="product-card__footer">
+    <button class="btn btn--primary btn--full" onclick="addToCart('{{ product.slug }}')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      В корзину
+    </button>
+  </div>
+</div>

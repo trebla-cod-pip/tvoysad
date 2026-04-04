@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог — Твой Сад{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="breadcrumbs">
+    <a href="{% url 'home' %}">Главная</a> /
+    <span>Каталог{% if active_category %} / {{ active_category.name }}{% endif %}</span>
+  </div>
+
+  <!-- Mobile filters -->
+  <div class="mobile-filters">
+    <a href="{% url 'catalog' %}" class="filter-chip {% if not active_category and not active_tag %}active{% endif %}">Все</a>
+    {% for cat in categories %}
+    <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="filter-chip {% if active_category.slug == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+    {% endfor %}
+    <a href="{% url 'catalog' %}?tag=hit" class="filter-chip {% if active_tag == 'hit' %}active{% endif %}">★ Хиты</a>
+    <a href="{% url 'catalog' %}?tag=new" class="filter-chip {% if active_tag == 'new' %}active{% endif %}">⚡ Новинки</a>
+    <a href="{% url 'catalog' %}?tag=sale" class="filter-chip {% if active_tag == 'sale' %}active{% endif %}">% Скидки</a>
+  </div>
+
+  <div class="catalog-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Категории</div>
+        <div class="sidebar-list">
+          <a href="{% url 'catalog' %}" class="sidebar-item {% if not active_category %}active{% endif %}">
+            Все <span class="sidebar-count">{{ total }}</span>
+          </a>
+          {% for cat in categories %}
+          <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="sidebar-item {% if active_category.slug == cat.slug %}active{% endif %}">
+            {{ cat.name }}
+            <span class="sidebar-count">{{ cat.get_products_count }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Метки</div>
+        <div class="sidebar-list">
+          <a href="{% url 'catalog' %}?tag=hit{% if active_category %}&category={{ active_category.slug }}{% endif %}" class="sidebar-item {% if active_tag == 'hit' %}active{% endif %}">★ Хиты</a>
+          <a href="{% url 'catalog' %}?tag=new{% if active_category %}&category={{ active_category.slug }}{% endif %}" class="sidebar-item {% if active_tag == 'new' %}active{% endif %}">⚡ Новинки</a>
+          <a href="{% url 'catalog' %}?tag=sale{% if active_category %}&category={{ active_category.slug }}{% endif %}" class="sidebar-item {% if active_tag == 'sale' %}active{% endif %}">% Скидки</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Products -->
+    <div>
+      <div class="catalog-toolbar">
+        <span class="catalog-total">{{ total }} товаров</span>
+        <form method="get" style="display:contents">
+          {% if active_category %}<input type="hidden" name="category" value="{{ active_category.slug }}">{% endif %}
+          {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+          {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+          <select name="sort" class="catalog-sort" onchange="this.form.submit()">
+            <option value="new" {% if sort == 'new' %}selected{% endif %}>Сначала новые</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Цена ↑</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Цена ↓</option>
+            <option value="name" {% if sort == 'name' %}selected{% endif %}>По названию</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>По рейтингу</option>
+          </select>
+        </form>
+      </div>
+
+      {% if products %}
+        <div class="products-grid">
+          {% for product in products %}
+          {% include 'components/product_card.html' %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>Ничего не найдено</h3>
+          <p class="text-muted" style="margin-top:8px">Попробуйте изменить фильтры</p>
+          <a href="{% url 'catalog' %}" class="btn btn--outline" style="margin-top:20px">Сбросить фильтры</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
