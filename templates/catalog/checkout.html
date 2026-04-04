@@ -75,20 +75,15 @@
       <div class="checkout-section">
         <div class="checkout-section-title">Способ оплаты</div>
         <div class="payment-options">
-          <label class="payment-option active" id="pay-card" onclick="selectPayment(this, 'card')">
-            <input type="radio" name="payment_method" value="card" checked style="display:none">
-            <div class="payment-option-icon">💳</div>
-            <div class="payment-option-label">Карта</div>
-          </label>
-          <label class="payment-option" id="pay-sbp" onclick="selectPayment(this, 'sbp')">
-            <input type="radio" name="payment_method" value="sbp" style="display:none">
-            <div class="payment-option-icon">🔲</div>
-            <div class="payment-option-label">СБП</div>
-          </label>
-          <label class="payment-option" id="pay-cash" onclick="selectPayment(this, 'cash')">
-            <input type="radio" name="payment_method" value="cash" style="display:none">
+          <label class="payment-option active" id="pay-cash" onclick="selectPayment(this, 'cash')">
+            <input type="radio" name="payment_method" value="cash" checked style="display:none">
             <div class="payment-option-icon">💰</div>
             <div class="payment-option-label">Наличные</div>
+          </label>
+          <label class="payment-option" id="pay-transfer" onclick="selectPayment(this, 'transfer')">
+            <input type="radio" name="payment_method" value="transfer" style="display:none">
+            <div class="payment-option-icon">📲</div>
+            <div class="payment-option-label">Переводом</div>
           </label>
         </div>
       </div>

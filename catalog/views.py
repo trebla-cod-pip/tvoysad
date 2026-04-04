@@ -55,7 +55,13 @@ def catalog(request):
         products = products.filter(tags__icontains=tag)
 
     if search:
-        products = products.filter(name__icontains=search)
+        from django.db.models.functions import Lower
+        from django.db.models import Q
+        s = search.lower()
+        products = products.annotate(
+            name_lower=Lower('name'),
+            desc_lower=Lower('description'),
+        ).filter(Q(name_lower__contains=s) | Q(desc_lower__contains=s))
 
     sort_map = {
         'new': '-created_at',
