@@ -9,6 +9,7 @@ class SiteSettings(models.Model):
     email = models.EmailField('Email', default='hello@tvoysad.ru')
     schedule = models.CharField('График работы', max_length=100, default='Ежедневно: 9:00–20:00')
     address = models.CharField('Адрес питомника', max_length=200, default='Московская область, г. Сергиев Посад', blank=True)
+    courier_price = models.PositiveIntegerField('Цена курьерской доставки (₽)', default=500)
 
     class Meta:
         verbose_name = 'Настройки сайта'
