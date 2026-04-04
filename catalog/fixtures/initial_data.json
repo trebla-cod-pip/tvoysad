@@ -1,0 +1,409 @@
+[
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "name": "Яблони",
+      "slug": "yabloni",
+      "description": "Плодовые яблони различных сортов",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 1,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "name": "Груши",
+      "slug": "grushi",
+      "description": "Сочные груши для вашего сада",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 2,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "name": "Сливы",
+      "slug": "slivy",
+      "description": "Сладкие и кисло-сладкие сливы",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 3,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 4,
+    "fields": {
+      "name": "Вишни",
+      "slug": "vishni",
+      "description": "Вишни и черешни",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 4,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 5,
+    "fields": {
+      "name": "Декоративные",
+      "slug": "dekorativnye",
+      "description": "Декоративные кустарники и деревья",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 5,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+
+  {
+    "model": "catalog.product",
+    "pk": 1,
+    "fields": {
+      "name": "Яблоня «Антоновка»",
+      "slug": "yablonya-antonovka",
+      "description": "Классический русский зимний сорт с крупными плодами. Отличается высокой урожайностью и зимостойкостью.",
+      "care_tips": "Посадка: выберите солнечное место с хорошо дренированной почвой.\nПолив: 2–3 раза в неделю в первый год после посадки.\nОбрезка: формирующая обрезка ранней весной до распускания почек.\nУдобрение: весной азотные удобрения, летом — фосфорно-калийные.",
+      "price": "1200.00",
+      "old_price": "1500.00",
+      "sku": "APL-001",
+      "unit": "шт",
+      "rating": "4.80",
+      "rating_count": 12,
+      "image": "",
+      "cart_image": "",
+      "category": 1,
+      "tags": "hit",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 50,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 2,
+    "fields": {
+      "name": "Яблоня «Голден Делишес»",
+      "slug": "yablonya-golden",
+      "description": "Популярный американский сорт с золотистыми сладкими плодами. Идеален для свежего потребления.",
+      "care_tips": "Любит солнечные, защищённые от ветра места. Требует опылителя.",
+      "price": "1400.00",
+      "old_price": null,
+      "sku": "APL-002",
+      "unit": "шт",
+      "rating": "4.60",
+      "rating_count": 8,
+      "image": "",
+      "cart_image": "",
+      "category": 1,
+      "tags": "new",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 30,
+      "created_at": "2026-01-01T00:01:00Z",
+      "updated_at": "2026-01-01T00:01:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 3,
+    "fields": {
+      "name": "Яблоня «Симиренко»",
+      "slug": "yablonya-simirenenko",
+      "description": "Зимний сорт украинской селекции с крупными зелёными плодами.",
+      "care_tips": "Морозостойкий сорт, подходит для средней полосы России.",
+      "price": "1300.00",
+      "old_price": null,
+      "sku": "APL-003",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 1,
+      "tags": "",
+      "is_active": true,
+      "is_featured": false,
+      "stock": 20,
+      "created_at": "2026-01-01T00:02:00Z",
+      "updated_at": "2026-01-01T00:02:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 4,
+    "fields": {
+      "name": "Груша «Лада»",
+      "slug": "grusha-lada",
+      "description": "Раннелетний сорт с сочными плодами. Устойчив к болезням, высокоурожаен.",
+      "care_tips": "Посадка весной или осенью. Требует опылителя — «Чижовская» или «Отрадненская».",
+      "price": "1100.00",
+      "old_price": null,
+      "sku": "PEA-001",
+      "unit": "шт",
+      "rating": "4.70",
+      "rating_count": 9,
+      "image": "",
+      "cart_image": "",
+      "category": 2,
+      "tags": "hit",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 40,
+      "created_at": "2026-01-01T00:03:00Z",
+      "updated_at": "2026-01-01T00:03:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 5,
+    "fields": {
+      "name": "Груша «Чижовская»",
+      "slug": "grusha-chizhevskaya",
+      "description": "Популярный летний сорт с нежными сладкими плодами.",
+      "care_tips": "Высокая зимостойкость. Хорошо растёт на суглинках.",
+      "price": "1150.00",
+      "old_price": null,
+      "sku": "PEA-002",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 2,
+      "tags": "",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 25,
+      "created_at": "2026-01-01T00:04:00Z",
+      "updated_at": "2026-01-01T00:04:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 6,
+    "fields": {
+      "name": "Слива «Венгерка»",
+      "slug": "sliva-vengerka",
+      "description": "Классический сорт сливы с синими плодами. Идеальна для варенья и джема.",
+      "care_tips": "Самоплодный сорт, не требует опылителя. Предпочитает супесчаные почвы.",
+      "price": "1000.00",
+      "old_price": "1250.00",
+      "sku": "PLM-001",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 3,
+      "tags": "sale",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 35,
+      "created_at": "2026-01-01T00:05:00Z",
+      "updated_at": "2026-01-01T00:05:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 7,
+    "fields": {
+      "name": "Слива «Анна Шпет»",
+      "slug": "sliva-anna-shpet",
+      "description": "Позднеспелый сорт с крупными тёмно-фиолетовыми плодами.",
+      "care_tips": "Нуждается в опылителях. Высокая урожайность при правильном уходе.",
+      "price": "1100.00",
+      "old_price": null,
+      "sku": "PLM-002",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 3,
+      "tags": "",
+      "is_active": true,
+      "is_featured": false,
+      "stock": 15,
+      "created_at": "2026-01-01T00:06:00Z",
+      "updated_at": "2026-01-01T00:06:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 8,
+    "fields": {
+      "name": "Вишня «Шоколадница»",
+      "slug": "vishnya-shokoladnitsa",
+      "description": "Компактный сорт с тёмно-бордовыми плодами насыщенного вкуса.",
+      "care_tips": "Самоплодный, компактный. Подходит для небольших участков.",
+      "price": "1300.00",
+      "old_price": null,
+      "sku": "CHR-001",
+      "unit": "шт",
+      "rating": "4.90",
+      "rating_count": 5,
+      "image": "",
+      "cart_image": "",
+      "category": 4,
+      "tags": "new",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 20,
+      "created_at": "2026-01-01T00:07:00Z",
+      "updated_at": "2026-01-01T00:07:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 9,
+    "fields": {
+      "name": "Черешня «Ипуть»",
+      "slug": "chereshnya-iput",
+      "description": "Раннеспелый сорт черешни с крупными тёмно-красными плодами.",
+      "care_tips": "Требует опылителей. Высаживайте несколько сортов рядом.",
+      "price": "1800.00",
+      "old_price": "2000.00",
+      "sku": "CHR-002",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 4,
+      "tags": "sale",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 18,
+      "created_at": "2026-01-01T00:08:00Z",
+      "updated_at": "2026-01-01T00:08:00Z"
+    }
+  },
+
+  {
+    "model": "catalog.productspecification",
+    "pk": 1,
+    "fields": {"product": 1, "key": "sort", "label": "Сорт", "value": "Зимний", "icon": "snowflake", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 2,
+    "fields": {"product": 1, "key": "height", "label": "Высота", "value": "3–4 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 3,
+    "fields": {"product": 1, "key": "frost", "label": "Морозостойкость", "value": "до −35°C", "icon": "thermometer", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 4,
+    "fields": {"product": 1, "key": "light", "label": "Освещённость", "value": "Полное солнце", "icon": "sun", "sort_order": 4}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 5,
+    "fields": {"product": 1, "key": "water", "label": "Полив", "value": "Умеренный", "icon": "droplets", "sort_order": 5}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 6,
+    "fields": {"product": 2, "key": "sort", "label": "Сорт", "value": "Летний", "icon": "sun", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 7,
+    "fields": {"product": 2, "key": "height", "label": "Высота", "value": "2.5–3.5 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 8,
+    "fields": {"product": 2, "key": "yield", "label": "Урожайность", "value": "Высокая", "icon": "leaf", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 9,
+    "fields": {"product": 3, "key": "sort", "label": "Сорт", "value": "Зимний", "icon": "snowflake", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 10,
+    "fields": {"product": 3, "key": "height", "label": "Высота", "value": "3–5 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 11,
+    "fields": {"product": 4, "key": "sort", "label": "Сорт", "value": "Летний", "icon": "sun", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 12,
+    "fields": {"product": 4, "key": "height", "label": "Высота", "value": "3–4 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 13,
+    "fields": {"product": 4, "key": "frost", "label": "Морозостойкость", "value": "до −30°C", "icon": "thermometer", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 14,
+    "fields": {"product": 5, "key": "sort", "label": "Сорт", "value": "Летний", "icon": "sun", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 15,
+    "fields": {"product": 5, "key": "height", "label": "Высота", "value": "3–4 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 16,
+    "fields": {"product": 6, "key": "type", "label": "Тип", "value": "Самоплодная", "icon": "check", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 17,
+    "fields": {"product": 6, "key": "height", "label": "Высота", "value": "2.5–3 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 18,
+    "fields": {"product": 6, "key": "harvest", "label": "Урожай", "value": "Август–сентябрь", "icon": "calendar", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 19,
+    "fields": {"product": 8, "key": "type", "label": "Тип", "value": "Самоплодная", "icon": "check", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 20,
+    "fields": {"product": 8, "key": "height", "label": "Высота", "value": "2–2.5 м", "icon": "ruler", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 21,
+    "fields": {"product": 9, "key": "height", "label": "Высота", "value": "3–4 м", "icon": "ruler", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 22,
+    "fields": {"product": 9, "key": "harvest", "label": "Урожай", "value": "Июнь", "icon": "calendar", "sort_order": 2}
+  }
+]

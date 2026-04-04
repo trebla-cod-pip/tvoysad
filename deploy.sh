@@ -107,7 +107,23 @@ info "Шаг 5/7 — Миграции базы данных"
 "$PYTHON_BIN" manage.py migrate --noinput
 success "Миграции применены"
 
-info "Шаг 5b — Сбор статических файлов"
+info "Шаг 5b — Загрузка фикстур (демо-данные)"
+CATALOG_COUNT=$("$PYTHON_BIN" - <<'EOF'
+import django, os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
+from catalog.models import Category
+print(Category.objects.count())
+EOF
+)
+if [[ "$CATALOG_COUNT" == "0" ]]; then
+    "$PYTHON_BIN" manage.py loaddata catalog/fixtures/initial_data.json
+    success "Фикстуры загружены (5 категорий, 9 товаров)"
+else
+    success "Каталог уже заполнен (${CATALOG_COUNT} категорий), фикстуры пропущены"
+fi
+
+info "Шаг 5c — Сбор статических файлов"
 mkdir -p staticfiles
 "$PYTHON_BIN" manage.py collectstatic --noinput --clear
 success "Статика собрана в staticfiles/"
