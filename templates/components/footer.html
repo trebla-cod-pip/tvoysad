@@ -35,9 +35,9 @@
       <div>
         <p class="footer-col-title">Контакты</p>
         <div class="footer-contact">
-          <div>+7 (999) 123-45-67</div>
-          <div><a href="mailto:hello@tvoysad.ru">hello@tvoysad.ru</a></div>
-          <div>Ежедневно: 9:00–20:00</div>
+          <div><a href="tel:{{ site_settings.phone|cut:' ' }}" style="color:inherit">{{ site_settings.phone }}</a></div>
+          <div><a href="mailto:{{ site_settings.email }}" style="color:inherit">{{ site_settings.email }}</a></div>
+          <div>{{ site_settings.schedule }}</div>
         </div>
       </div>
     </div>

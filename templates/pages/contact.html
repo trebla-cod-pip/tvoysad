@@ -18,7 +18,7 @@
             </svg>
           </div>
           <div class="contact-card-title">Телефон</div>
-          <div class="contact-card-text">+7 (999) 123-45-67<br>Ежедневно: 9:00–20:00</div>
+          <div class="contact-card-text"><a href="tel:{{ site_settings.phone|cut:' ' }}">{{ site_settings.phone }}</a><br>{{ site_settings.schedule }}</div>
         </div>
         <div class="contact-card">
           <div class="contact-card-icon">
@@ -27,7 +27,7 @@
             </svg>
           </div>
           <div class="contact-card-title">Почта</div>
-          <div class="contact-card-text">hello@tvoysad.ru<br>Отвечаем за 2 часа</div>
+          <div class="contact-card-text"><a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a><br>Отвечаем за 2 часа</div>
         </div>
         <div class="contact-card">
           <div class="contact-card-icon">
@@ -36,7 +36,7 @@
             </svg>
           </div>
           <div class="contact-card-title">Питомник</div>
-          <div class="contact-card-text">Московская область,<br>г. Сергиев Посад</div>
+          <div class="contact-card-text">{{ site_settings.address }}</div>
         </div>
         <div class="contact-card">
           <div class="contact-card-icon">
@@ -45,7 +45,7 @@
             </svg>
           </div>
           <div class="contact-card-title">Доставка</div>
-          <div class="contact-card-text">+7 (999) 987-65-43<br>Вопросы по заказам</div>
+          <div class="contact-card-text"><a href="tel:{{ site_settings.phone_delivery|cut:' ' }}">{{ site_settings.phone_delivery }}</a><br>Вопросы по заказам</div>
         </div>
       </div>
     </div>
