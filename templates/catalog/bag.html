@@ -65,30 +65,55 @@
 
 <script>
 const prices = { {% for item in items %}'{{ item.product.slug }}': {{ item.product.price }},{% endfor %} };
+const URL_UPDATE = '{% url "cart_update" %}';
+const URL_REMOVE = '{% url "cart_remove" %}';
+
+function getCSRF() {
+  const m = document.cookie.match('(^|;)\\s*csrftoken=([^;]+)');
+  return m ? m[2] : '';
+}
+
+async function cartPost(url, data) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRF()},
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
 
 async function updateQty(slug, delta) {
+  const el = document.getElementById('qty-' + slug);
+  if (!el) return;
+  const newQty = Math.max(1, parseInt(el.textContent) + delta);
+  el.textContent = newQty;
   try {
-    const el = document.getElementById('qty-' + slug);
-    const newQty = Math.max(1, parseInt(el.textContent) + delta);
-    el.textContent = newQty;
-    const data = await apiPost('{% url "cart_update" %}', {slug, qty: newQty});
-    updateCartBadge(data.count);
-    const subtotal = (prices[slug] * newQty).toFixed(0);
-    document.getElementById('subtotal-' + slug).textContent = subtotal + ' ₽';
-    document.getElementById('price-' + slug).textContent = subtotal + ' ₽';
-    document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
-    document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
-  } catch(e) { console.error('updateQty error:', e); }
+    const data = await cartPost(URL_UPDATE, {slug, qty: newQty});
+    const subtotal = Math.round(prices[slug] * newQty);
+    document.getElementById('subtotal-' + slug).textContent = subtotal.toLocaleString('ru') + ' ₽';
+    document.getElementById('price-' + slug).textContent   = subtotal.toLocaleString('ru') + ' ₽';
+    document.getElementById('summaryTotal').textContent    = parseInt(data.total).toLocaleString('ru') + ' ₽';
+    document.getElementById('summaryFinal').textContent    = parseInt(data.total).toLocaleString('ru') + ' ₽';
+    document.querySelectorAll('.cart-count').forEach(b => {
+      b.textContent = data.count;
+      b.style.display = data.count > 0 ? 'flex' : 'none';
+    });
+  } catch(e) {
+    console.error('updateQty error:', e);
+    el.textContent = Math.max(1, parseInt(el.textContent) - delta); // откатываем
+  }
 }
 
 async function removeItem(slug) {
+  const row = document.getElementById('cart-row-' + slug);
   try {
-    await apiPost('{% url "cart_remove" %}', {slug});
-    const row = document.getElementById('cart-row-' + slug);
-    row.style.opacity = '0';
-    row.style.transition = 'opacity .3s';
-    setTimeout(() => { row.remove(); location.reload(); }, 300);
-  } catch(e) { console.error('removeItem error:', e); }
+    await cartPost(URL_REMOVE, {slug});
+    if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; }
+    setTimeout(() => location.reload(), 350);
+  } catch(e) {
+    console.error('removeItem error:', e);
+  }
 }
 </script>
 {% endblock %}
