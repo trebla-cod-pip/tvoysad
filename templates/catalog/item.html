@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static image_tags %}
 
 {% block title %}{{ product.name }} — Твой Сад{% endblock %}
 
@@ -16,19 +16,25 @@
     <!-- Gallery -->
     <div class="gallery">
       <div class="gallery-main" id="mainImg">
-        {% if product.images.all %}
-          <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" id="mainImgEl">
+        {% if gallery_images %}
+          {% with first_image=gallery_images.0 %}
+            {% webp_best_url first_image.image 800 as first_main_url %}
+            <img src="{{ first_main_url }}" alt="{{ product.name }}" id="mainImgEl" loading="eager" fetchpriority="high" decoding="async" width="{{ first_image.image.width }}" height="{{ first_image.image.height }}">
+          {% endwith %}
         {% elif product.image %}
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImgEl">
+          {% webp_best_url product.image 800 as first_main_url %}
+          <img src="{{ first_main_url }}" alt="{{ product.name }}" id="mainImgEl" loading="eager" fetchpriority="high" decoding="async" width="{{ product.image.width }}" height="{{ product.image.height }}">
         {% else %}
           <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:96px;background:var(--secondary);">🌱</div>
         {% endif %}
       </div>
-      {% if product.images.count > 1 %}
+      {% if gallery_images|length > 1 %}
       <div class="gallery-thumbs">
-        {% for img in product.images.all %}
-        <div class="gallery-thumb {% if forloop.first %}active{% endif %}" onclick="switchImage('{{ img.image.url }}', this)">
-          <img src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+        {% for img in gallery_images %}
+        {% webp_best_url img.image 800 as main_url %}
+        {% webp_best_url img.image 160 as thumb_url %}
+        <div class="gallery-thumb {% if forloop.first %}active{% endif %}" onclick="switchImage('{{ main_url }}', this)">
+          <img src="{{ thumb_url }}" alt="{{ img.alt_text|default:product.name }}" loading="lazy" decoding="async" width="72" height="72">
         </div>
         {% endfor %}
       </div>
@@ -178,7 +184,9 @@ function addToCartWithQty(slug) {
   addToCart(slug, qty);
 }
 function switchImage(url, thumb) {
-  document.getElementById('mainImgEl').src = url;
+  const mainImage = document.getElementById('mainImgEl');
+  if (!mainImage) return;
+  mainImage.src = url;
   document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
   thumb.classList.add('active');
 }
@@ -194,6 +202,17 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
   await apiPost('/api/reviews/', data);
   document.getElementById('reviewForm').style.display = 'none';
   document.getElementById('reviewSuccess').style.display = 'block';
+});
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<script>
+window.addEventListener('load', function () {
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 });
 </script>
 {% endblock %}

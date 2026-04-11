@@ -38,15 +38,15 @@ class Command(BaseCommand):
                 err += 1
                 self.stderr.write(f'  ERR {label}')
 
-        self.stdout.write('→ Categories...')
+        self.stdout.write('-> Categories...')
         for cat in Category.objects.exclude(image=''):
             process(f'Category({cat.pk}) {cat.name}', cat.image.name)
 
-        self.stdout.write('→ Products...')
+        self.stdout.write('-> Products...')
         for prod in Product.objects.exclude(image=''):
             process(f'Product({prod.pk}) {prod.name}', prod.image.name)
 
-        self.stdout.write('→ Product gallery...')
+        self.stdout.write('-> Product gallery...')
         for pi in ProductImage.objects.all():
             process(f'ProductImage({pi.pk}) {pi.product.name}', pi.image.name)
 

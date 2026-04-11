@@ -105,32 +105,49 @@
     @keyframes fadeIn { from { opacity:0; transform:translateX(-50%) translateY(8px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
   </style>
   <!-- Telegram Web App SDK — загружается в конце body, не блокирует отрисовку -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-  <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
+  <!-- Telegram SDK is loaded lazily after first render -->
 
   <script>
   (function() {
-    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.initData) return;
-    const twa = Telegram.WebApp;
-    twa.ready();
-    const payload = {
-      initData: twa.initData,
-      user: twa.initDataUnsafe?.user || null,
-      platform: twa.platform,
-      version: twa.version,
-      clientPlatform: navigator.platform,
-      colorScheme: twa.colorScheme,
-      page: window.location.pathname,
-      screenWidth: screen.width,
-      screenHeight: screen.height,
-    };
-    fetch('{% url "tg_init" %}', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload),
-    }).catch(() => {});
+    function sendTelegramInit() {
+      if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.initData) return;
+      const twa = Telegram.WebApp;
+      twa.ready();
+      const payload = {
+        initData: twa.initData,
+        user: twa.initDataUnsafe?.user || null,
+        platform: twa.platform,
+        version: twa.version,
+        clientPlatform: navigator.platform,
+        colorScheme: twa.colorScheme,
+        page: window.location.pathname,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+      };
+      fetch('{% url "tg_init" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    }
+
+    function loadTelegramSdk() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        sendTelegramInit();
+        return;
+      }
+      const sdk = document.createElement('script');
+      sdk.src = 'https://telegram.org/js/telegram-web-app.js';
+      sdk.async = true;
+      sdk.onload = sendTelegramInit;
+      document.head.appendChild(sdk);
+    }
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadTelegramSdk, { timeout: 2000 });
+    } else {
+      setTimeout(loadTelegramSdk, 1200);
+    }
   })();
   </script>
 

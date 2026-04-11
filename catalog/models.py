@@ -29,6 +29,8 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def get_products_count(self):
+        if hasattr(self, 'products_count'):
+            return self.products_count
         return self.products.filter(is_active=True).count()
 
 

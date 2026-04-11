@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static image_tags %}
 
 {% block title %}Корзина — Твой Сад{% endblock %}
 
@@ -14,7 +14,8 @@
       {% for item in items %}
       <div class="cart-item" id="cart-row-{{ item.product.slug }}">
         {% if item.product.image %}
-          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item__img">
+          {% webp_best_url item.product.image 160 as cart_img_url %}
+          <img src="{{ cart_img_url }}" alt="{{ item.product.name }}" class="cart-item__img" loading="lazy" decoding="async" width="80" height="80">
         {% else %}
           <div style="width:80px;height:80px;background:var(--secondary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:32px;">🌱</div>
         {% endif %}
