@@ -29,6 +29,28 @@ def _build_uid(session_key, ip, user_agent):
     return hashlib.sha256(raw.encode('utf-8', errors='replace')).hexdigest()[:16]
 
 
+def _detect_source(path, referrer, user_agent):
+    """
+    Определяет источник запроса: 'telegram' или 'web'.
+
+    Сигналы (в порядке приоритета):
+    1. User-Agent содержит 'Telegram' — клиент явно маркирует себя
+       (TelegramAndroid, TelegramDesktop, ряд версий iOS-клиента).
+    2. Referer — t.me или telegram.me (открытие через ссылку в TG).
+    3. Путь начинается с /api/tg/ — сам запрос является TG-эндпоинтом.
+    """
+    ua_lower  = user_agent.lower()
+    ref_lower = referrer.lower()
+
+    if 'telegram' in ua_lower:
+        return 'telegram'
+    if 't.me' in ref_lower or 'telegram.me' in ref_lower:
+        return 'telegram'
+    if path.startswith('/api/tg/'):
+        return 'telegram'
+    return 'web'
+
+
 def _classify_event(request, status_code):
     path   = request.path
     method = request.method
@@ -91,6 +113,8 @@ class ActivityLogMiddleware(MiddlewareMixin):
             uid        = _build_uid(session_key, ip, user_agent)
             status     = response.status_code
             event_type = _classify_event(request, status)
+            referrer   = request.META.get('HTTP_REFERER', '')
+            source     = _detect_source(path, referrer, user_agent)
 
             user_id = None
             try:
@@ -109,9 +133,10 @@ class ActivityLogMiddleware(MiddlewareMixin):
                 query_string     = request.META.get('QUERY_STRING', ''),
                 status_code      = status,
                 response_time_ms = elapsed_ms,
-                referrer         = request.META.get('HTTP_REFERER', ''),
+                referrer         = referrer,
                 user_agent       = user_agent,
                 event_type       = event_type,
+                source           = source,
                 user_id          = user_id,
             )
 

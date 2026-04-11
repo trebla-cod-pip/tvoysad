@@ -111,18 +111,13 @@ def _build_dashboard_context(request, admin_site):
         a['avg_ms'] = round(a['avg_ms'] or 0)
 
     # ── Traffic source: Telegram vs Web ──────────────────────────────────────
-    # Telegram-пользователи всегда вызывают /api/tg/ — надёжный маркер.
-    tg_uids = set(
-        qs.filter(path__startswith='/api/tg/')
-          .values_list('uid', flat=True)
-          .distinct()
-    )
-    tg_req  = qs.filter(uid__in=tg_uids).count() if tg_uids else 0
-    web_req = total - tg_req
-    tg_vis  = len(tg_uids)
-    web_vis = unique - tg_vis
+    # source хранится прямо в каждой записи — определяется в middleware.
+    tg_req  = qs.filter(source='telegram').count()
+    web_req = qs.filter(source='web').count()
+    tg_vis  = qs.filter(source='telegram').values('uid').distinct().count()
+    web_vis = qs.filter(source='web').values('uid').distinct().count()
 
-    # Timeline split: TG / Web по тем же меткам что и основной график
+    # Timeline split: TG / Web
     trunc_fn = TruncHour if period == 1 else TruncDate
     fmt      = '%H:%M'   if period == 1 else '%d.%m'
 
@@ -131,8 +126,8 @@ def _build_dashboard_context(request, admin_site):
                         .values('t').annotate(n=Count('id')).order_by('t'))
         return {r['t'].strftime(fmt): r['n'] for r in rows}
 
-    tg_by_t  = _tl_map(qs.filter(uid__in=tg_uids))  if tg_uids else {}
-    web_by_t = _tl_map(qs.exclude(uid__in=tg_uids)) if tg_uids else _tl_map(qs)
+    tg_by_t  = _tl_map(qs.filter(source='telegram'))
+    web_by_t = _tl_map(qs.filter(source='web'))
 
     all_tl_labels = sorted(set(tg_by_t) | set(web_by_t))
     tl_tg_data  = [tg_by_t.get(l, 0)  for l in all_tl_labels]

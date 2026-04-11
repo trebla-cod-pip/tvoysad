@@ -46,6 +46,19 @@ class ActivityLog(models.Model):
         db_index=True,
     )
 
+    # Источник трафика
+    SOURCE_TG  = 'telegram'
+    SOURCE_WEB = 'web'
+    SOURCE_CHOICES = [
+        (SOURCE_TG,  'Telegram'),
+        (SOURCE_WEB, 'Веб'),
+    ]
+    source = models.CharField(
+        'Источник', max_length=20,
+        choices=SOURCE_CHOICES, default=SOURCE_WEB,
+        db_index=True,
+    )
+
     # Авторизованный пользователь (если есть)
     user_id = models.IntegerField('ID пользователя', null=True, blank=True, db_index=True)
 
