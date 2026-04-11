@@ -8,12 +8,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>{% block title %}Твой Сад — саженцы плодовых деревьев{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  {% block meta_description %}<meta name="description" content="Интернет-магазин саженцев плодовых и декоративных растений. Быстрая доставка, гарантия качества.">{% endblock %}
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Google Fonts: async load — не блокирует отрисовку -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  </noscript>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -98,8 +104,11 @@
   <style>
     @keyframes fadeIn { from { opacity:0; transform:translateX(-50%) translateY(8px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
   </style>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script>lucide.createIcons();</script>
+  <!-- Telegram Web App SDK — загружается в конце body, не блокирует отрисовку -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
 
   <script>
   (function() {

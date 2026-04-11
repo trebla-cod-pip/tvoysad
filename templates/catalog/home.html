@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static image_tags %}
 
 {% block title %}Твой Сад — саженцы плодовых и декоративных растений{% endblock %}
+
+{% block meta_description %}<meta name="description" content="Интернет-магазин саженцев плодовых и ягодных культур. Яблони, груши, сливы, вишни — бережная доставка и гарантия качества. Заказывайте на tlpn.shop.">{% endblock %}
 
 {% block content %}
 
@@ -22,7 +24,8 @@
       </div>
       <div class="hero-img">
         {% if site_settings.hero_image %}
-          <img src="{{ site_settings.hero_image.url }}" alt="Твой Сад">
+          {# LCP-изображение: eager + fetchpriority=high #}
+          {% webp_picture site_settings.hero_image alt="Твой Сад" sizes="(max-width:1024px) 100vw, 50vw" lazy=False fetch_priority="high" widths="800,1200" %}
         {% else %}
           <div class="hero-img-placeholder" style="min-height:400px; background:var(--secondary); border-radius:var(--radius-xl); display:flex; align-items:center; justify-content:center; color:var(--muted-foreground); font-size:80px;">🌳</div>
         {% endif %}
@@ -43,7 +46,12 @@
       {% for cat in categories %}
       <a href="{% url 'catalog' %}?category={{ cat.slug }}" class="category-card">
         {% if cat.image %}
-          <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+          {# Первые 4 категории — eager (вероятно в видимой области), остальные lazy #}
+          {% if forloop.counter <= 4 %}
+            {% webp_picture cat.image alt=cat.name sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" lazy=False %}
+          {% else %}
+            {% webp_picture cat.image alt=cat.name sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" %}
+          {% endif %}
         {% else %}
           <div style="width:100%;height:100%;background:var(--secondary);display:flex;align-items:center;justify-content:center;font-size:48px;">
             {% if forloop.counter == 1 %}🍎{% elif forloop.counter == 2 %}🍐{% elif forloop.counter == 3 %}🍒{% else %}🌸{% endif %}

@@ -19,6 +19,12 @@ echo "[INFO] Применяем миграции..."
 echo "[INFO] Собираем статику..."
 "$PYTHON_BIN" manage.py collectstatic --noinput --clear
 
+echo "[INFO] Минифицируем CSS..."
+"$PYTHON_BIN" manage.py compress_static
+
+echo "[INFO] Генерируем WebP-миниатюры..."
+"$PYTHON_BIN" manage.py generate_webp
+
 echo "[INFO] Перезапускаем Gunicorn..."
 systemctl restart tvoysad
 

@@ -242,28 +242,60 @@ echo -e "${BOLD}----------------------------------------------------------------
 echo -e "${BOLD}  Пример конфига Nginx (сохраните в /etc/nginx/sites-available/tvoysad)${NC}"
 echo -e "${BOLD}----------------------------------------------------------------------${NC}"
 cat <<NGINX
+# ── Gzip (вставьте в http {} блок /etc/nginx/nginx.conf если ещё нет) ──────
+# gzip on;
+# gzip_vary on;
+# gzip_proxied any;
+# gzip_comp_level 6;
+# gzip_types text/plain text/css text/javascript application/javascript
+#            application/json image/svg+xml font/woff2;
+
 server {
     listen 80;
     server_name your-domain.com www.your-domain.com;
 
     client_max_body_size 20M;
 
+    # ── Статика: долгосрочный кеш (CSS/JS имеют хеш в имени у collectstatic) ──
     location /static/ {
         alias ${PROJECT_DIR}/staticfiles/;
-        expires 30d;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
     }
 
+    # ── Медиа: умеренный кеш (изображения меняются редко) ────────────────────
     location /media/ {
         alias ${PROJECT_DIR}/media/;
         expires 30d;
+        add_header Cache-Control "public";
+        access_log off;
+
+        # WebP: отдаём браузерам, поддерживающим WebP ─────────────────────
+        location ~* \.(jpg|jpeg|png)$ {
+            expires 30d;
+            add_header Cache-Control "public";
+            add_header Vary "Accept";
+        }
     }
 
+    # ── Favicon ───────────────────────────────────────────────────────────────
+    location = /favicon.ico {
+        alias ${PROJECT_DIR}/staticfiles/favicon.ico;
+        expires 7d;
+        access_log off;
+    }
+
+    # ── Django ────────────────────────────────────────────────────────────────
     location / {
         proxy_pass http://unix:${SOCK_PATH};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header Host              \$host;
+        proxy_set_header X-Real-IP         \$remote_addr;
+        proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+
+        # Кеш HTML-страниц — не кешируем (динамика)
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
     }
 }
 NGINX
