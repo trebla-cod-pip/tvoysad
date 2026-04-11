@@ -2,10 +2,9 @@ import json
 from datetime import timedelta
 
 from django.contrib import admin
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count
 from django.db.models.functions import TruncDate, TruncHour
-from django.shortcuts import render
-from django.urls import path, reverse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -160,23 +159,10 @@ class ActivityLogAdmin(admin.ModelAdmin):
     ordering       = ('-timestamp',)
     date_hierarchy = 'timestamp'
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom = [
-            path('dashboard/',
-                 self.admin_site.admin_view(self.dashboard_view),
-                 name='activity_dashboard'),
-        ]
-        return custom + urls
-
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context['dashboard_url'] = reverse('admin:activity_dashboard')
+        extra_context['dashboard_url'] = reverse('activity_dashboard')
         return super().changelist_view(request, extra_context)
-
-    def dashboard_view(self, request):
-        ctx = _build_dashboard_context(request, self.admin_site)
-        return render(request, 'admin/activity/dashboard.html', ctx)
 
     # ── Display helpers ───────────────────────────────────────────────────────
 

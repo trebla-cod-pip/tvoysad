@@ -2,8 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from activity import views as activity_views
 
 urlpatterns = [
+    # дашборд регистрируем ДО admin.site.urls, чтобы избежать конфликта с catch-all admin
+    path('admin/activity/dashboard/', activity_views.dashboard, name='activity_dashboard'),
     path('admin/', admin.site.urls),
     path('', include('catalog.urls')),
     path('', include('pages.urls')),
