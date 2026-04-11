@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% load static image_tags %}
+{% load static %}
+{% load image_tags %}
 
 {% block title %}{{ product.name }} — Твой Сад{% endblock %}
 
@@ -17,10 +18,8 @@
     <div class="gallery">
       <div class="gallery-main" id="mainImg">
         {% if gallery_images %}
-          {% with first_image=gallery_images.0 %}
-            {% webp_best_url first_image.image 800 as first_main_url %}
-            <img src="{{ first_main_url }}" alt="{{ product.name }}" id="mainImgEl" loading="eager" fetchpriority="high" decoding="async" width="{{ first_image.image.width }}" height="{{ first_image.image.height }}">
-          {% endwith %}
+          {% webp_best_url gallery_images.0.image 800 as first_main_url %}
+          <img src="{{ first_main_url }}" alt="{{ product.name }}" id="mainImgEl" loading="eager" fetchpriority="high" decoding="async" width="{{ gallery_images.0.image.width }}" height="{{ gallery_images.0.image.height }}">
         {% elif product.image %}
           {% webp_best_url product.image 800 as first_main_url %}
           <img src="{{ first_main_url }}" alt="{{ product.name }}" id="mainImgEl" loading="eager" fetchpriority="high" decoding="async" width="{{ product.image.width }}" height="{{ product.image.height }}">

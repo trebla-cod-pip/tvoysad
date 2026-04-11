@@ -11,8 +11,7 @@ from catalog.image_utils import (
 
 register = template.Library()
 
-
-def _parse_bool(value, default=True) -> bool:
+def _parse_bool(value, default=True):
     if value is None:
         return default
     if isinstance(value, bool):
@@ -25,20 +24,16 @@ def _parse_bool(value, default=True) -> bool:
             return True
     return bool(value)
 
-
-def _best_candidate(candidates: list[tuple[int, str]], preferred_width: int) -> str:
+def _best_candidate(candidates, preferred_width):
     larger_or_equal = [candidate for candidate in candidates if candidate[0] >= preferred_width]
     if larger_or_equal:
         return min(larger_or_equal, key=lambda item: item[0])[1]
     return max(candidates, key=lambda item: item[0])[1]
 
-
 @register.simple_tag
 def webp_best_url(image_field, preferred_width=800, widths=None):
     """
     Return the best existing WebP URL for given width.
-
-    Falls back to original image URL if no WebP thumbs exist yet.
     """
     if not image_field:
         return ''
@@ -58,7 +53,6 @@ def webp_best_url(image_field, preferred_width=800, widths=None):
 
     return _best_candidate(candidates, target_width)
 
-
 @register.simple_tag
 def webp_picture(
     image_field,
@@ -71,7 +65,7 @@ def webp_picture(
     img_id='',
 ):
     """
-    Render a <picture> element with WebP srcset and original-format fallback.
+    Render a <picture> element with WebP srcset.
     """
     if not image_field:
         return ''
