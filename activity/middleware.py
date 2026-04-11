@@ -69,6 +69,13 @@ class ActivityLogMiddleware(MiddlewareMixin):
             if any(path.startswith(p) for p in SKIP_PREFIXES) or path in SKIP_EXACT:
                 return response
 
+            # Суперпользователей не логируем
+            try:
+                if request.user.is_superuser:
+                    return response
+            except Exception:
+                pass
+
             start = getattr(request, '_activity_start', None)
             elapsed_ms = int((time.monotonic() - start) * 1000) if start is not None else 0
 
