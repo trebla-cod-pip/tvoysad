@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'pages',
     'reviews',
     'tg_users',
+    'activity',
 ]
 
 TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN', '')
@@ -35,6 +36,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'activity.middleware.ActivityLogMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
