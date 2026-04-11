@@ -1,0 +1,155 @@
+[
+  {
+    "model": "catalog.category",
+    "pk": 6,
+    "fields": {
+      "name": "Цветы",
+      "slug": "tsvety",
+      "description": "Декоративные цветущие растения для сада и участка",
+      "image": "",
+      "parent": null,
+      "is_active": true,
+      "sort_order": 6,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+
+  {
+    "model": "catalog.product",
+    "pk": 10,
+    "fields": {
+      "name": "Древовидный пион",
+      "slug": "drevovidnyy-pion",
+      "description": "Роскошный кустарник с крупными махровыми цветами диаметром до 25 см. Цветёт в мае–июне, создавая феерическое зрелище. В отличие от травянистых пионов не срезается на зиму — формирует постоянный деревянистый каркас.",
+      "care_tips": "Посадка: солнечное или слегка затенённое место с хорошо дренированной нейтральной почвой.\nПолив: умеренный, 1–2 раза в неделю в жаркий период.\nУкрытие: в первые 2–3 года после посадки на зиму укрывают лапником или нетканым материалом.\nУдобрение: весной азотные удобрения, летом — фосфорно-калийные.\nОбрезка: весной санитарная — удаление подмёрзших кончиков.",
+      "price": "1500.00",
+      "old_price": null,
+      "sku": "FLW-001",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 6,
+      "tags": "new",
+      "is_active": true,
+      "is_featured": true,
+      "stock": 30,
+      "created_at": "2026-01-01T00:10:00Z",
+      "updated_at": "2026-01-01T00:10:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 11,
+    "fields": {
+      "name": "Лаванда широколиственная",
+      "slug": "lavanda-shirokolistvenaya",
+      "description": "Ароматный многолетник с серебристой листвой и пышными фиолетовыми соцветиями. Прекрасный медонос, отпугивает вредителей. Используется в ландшафтном дизайне, ароматерапии и кулинарии.",
+      "care_tips": "Посадка: солнечное место с лёгкой щелочной или нейтральной дренированной почвой.\nПолив: редкий — раз в 1–2 недели, засухоустойчива.\nОбрезка: после первого цветения срезают соцветия, осенью укорачивают на 1/3.\nУкрытие: в холодных регионах укрывают на зиму лапником.\nУдобрение: весной минеральные удобрения с низким содержанием азота.",
+      "price": "800.00",
+      "old_price": null,
+      "sku": "FLW-002",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 6,
+      "tags": "",
+      "is_active": true,
+      "is_featured": false,
+      "stock": 50,
+      "created_at": "2026-01-01T00:11:00Z",
+      "updated_at": "2026-01-01T00:11:00Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 12,
+    "fields": {
+      "name": "Роза садовая",
+      "slug": "roza-sadovaya",
+      "description": "Классическая королева сада с обильным продолжительным цветением с июня по октябрь. Широкий выбор оттенков — от белых и нежно-розовых до алых и бордовых. Украшение любого участка.",
+      "care_tips": "Посадка: открытое солнечное место с питательной рыхлой почвой.\nПолив: регулярный под корень, избегать попадания воды на листья.\nОбрезка: весенняя формирующая, удаление отцветших бутонов в течение сезона.\nУкрытие: обязательно на зиму — окучивание и укрытие лапником или нетканым материалом.\nЗащита: профилактические обработки от чёрной пятнистости и мучнистой росы.",
+      "price": "600.00",
+      "old_price": null,
+      "sku": "FLW-003",
+      "unit": "шт",
+      "rating": "0.00",
+      "rating_count": 0,
+      "image": "",
+      "cart_image": "",
+      "category": 6,
+      "tags": "",
+      "is_active": true,
+      "is_featured": false,
+      "stock": 100,
+      "created_at": "2026-01-01T00:12:00Z",
+      "updated_at": "2026-01-01T00:12:00Z"
+    }
+  },
+
+  {
+    "model": "catalog.productspecification",
+    "pk": 23,
+    "fields": {"product": 10, "key": "height", "label": "Высота", "value": "1–1.5 м", "icon": "ruler", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 24,
+    "fields": {"product": 10, "key": "frost", "label": "Морозостойкость", "value": "до −25°C", "icon": "thermometer", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 25,
+    "fields": {"product": 10, "key": "light", "label": "Освещённость", "value": "Солнце / лёгкая тень", "icon": "sun", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 26,
+    "fields": {"product": 10, "key": "bloom", "label": "Цветение", "value": "Май–июнь", "icon": "flower-2", "sort_order": 4}
+  },
+
+  {
+    "model": "catalog.productspecification",
+    "pk": 27,
+    "fields": {"product": 11, "key": "height", "label": "Высота", "value": "40–60 см", "icon": "ruler", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 28,
+    "fields": {"product": 11, "key": "frost", "label": "Морозостойкость", "value": "до −20°C", "icon": "thermometer", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 29,
+    "fields": {"product": 11, "key": "light", "label": "Освещённость", "value": "Полное солнце", "icon": "sun", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 30,
+    "fields": {"product": 11, "key": "bloom", "label": "Цветение", "value": "Июнь–август", "icon": "flower-2", "sort_order": 4}
+  },
+
+  {
+    "model": "catalog.productspecification",
+    "pk": 31,
+    "fields": {"product": 12, "key": "height", "label": "Высота", "value": "0.5–1.5 м", "icon": "ruler", "sort_order": 1}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 32,
+    "fields": {"product": 12, "key": "frost", "label": "Морозостойкость", "value": "до −25°C", "icon": "thermometer", "sort_order": 2}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 33,
+    "fields": {"product": 12, "key": "light", "label": "Освещённость", "value": "Полное солнце", "icon": "sun", "sort_order": 3}
+  },
+  {
+    "model": "catalog.productspecification",
+    "pk": 34,
+    "fields": {"product": 12, "key": "bloom", "label": "Цветение", "value": "Июнь–октябрь", "icon": "flower-2", "sort_order": 4}
+  }
+]
