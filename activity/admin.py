@@ -110,6 +110,34 @@ def _build_dashboard_context(request, admin_site):
     for a in top_api:
         a['avg_ms'] = round(a['avg_ms'] or 0)
 
+    # ── Traffic source: Telegram vs Web ──────────────────────────────────────
+    # Telegram-пользователи всегда вызывают /api/tg/ — надёжный маркер.
+    tg_uids = set(
+        qs.filter(path__startswith='/api/tg/')
+          .values_list('uid', flat=True)
+          .distinct()
+    )
+    tg_req  = qs.filter(uid__in=tg_uids).count() if tg_uids else 0
+    web_req = total - tg_req
+    tg_vis  = len(tg_uids)
+    web_vis = unique - tg_vis
+
+    # Timeline split: TG / Web по тем же меткам что и основной график
+    trunc_fn = TruncHour if period == 1 else TruncDate
+    fmt      = '%H:%M'   if period == 1 else '%d.%m'
+
+    def _tl_map(queryset):
+        rows = (queryset.annotate(t=trunc_fn('timestamp'))
+                        .values('t').annotate(n=Count('id')).order_by('t'))
+        return {r['t'].strftime(fmt): r['n'] for r in rows}
+
+    tg_by_t  = _tl_map(qs.filter(uid__in=tg_uids))  if tg_uids else {}
+    web_by_t = _tl_map(qs.exclude(uid__in=tg_uids)) if tg_uids else _tl_map(qs)
+
+    all_tl_labels = sorted(set(tg_by_t) | set(web_by_t))
+    tl_tg_data  = [tg_by_t.get(l, 0)  for l in all_tl_labels]
+    tl_web_data = [web_by_t.get(l, 0) for l in all_tl_labels]
+
     # ── Recent errors ─────────────────────────────────────────────────────────
     recent_errors = list(
         qs.filter(status_code__gte=400)
@@ -128,9 +156,17 @@ def _build_dashboard_context(request, admin_site):
         'unique':        unique,
         'avg_ms':        avg_ms,
         'err_rate':      err_rate,
+        # Traffic source
+        'tg_req':   tg_req,
+        'web_req':  web_req,
+        'tg_vis':   tg_vis,
+        'web_vis':  web_vis,
         # Charts (JSON)
-        'tl_labels_json':  json.dumps(tl_labels,  ensure_ascii=False),
-        'tl_data_json':    json.dumps(tl_data),
+        'tl_labels_json':     json.dumps(tl_labels,      ensure_ascii=False),
+        'tl_data_json':       json.dumps(tl_data),
+        'tl_src_labels_json': json.dumps(all_tl_labels,  ensure_ascii=False),
+        'tl_tg_json':         json.dumps(tl_tg_data),
+        'tl_web_json':        json.dumps(tl_web_data),
         'evt_labels_json': json.dumps(evt_labels, ensure_ascii=False),
         'evt_data_json':   json.dumps(evt_data),
         'evt_colors_json': json.dumps(evt_colors),

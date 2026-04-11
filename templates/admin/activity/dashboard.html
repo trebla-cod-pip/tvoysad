@@ -120,10 +120,71 @@
     </div>
   </div>
 
-  <!-- Timeline chart -->
+  <!-- Traffic source block -->
+  <div style="margin-bottom:16px">
+    <div class="chart-card">
+      <h2>Источник трафика</h2>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:center">
+
+        <!-- Doughnut -->
+        <div style="position:relative;max-width:220px">
+          <canvas id="chartSource"></canvas>
+        </div>
+
+        <!-- Stats table -->
+        <div>
+          <table class="db-table" style="max-width:480px">
+            <thead>
+              <tr>
+                <th>Источник</th>
+                <th style="text-align:right">Запросов</th>
+                <th style="text-align:right">% от общих</th>
+                <th style="text-align:right">Посетителей</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span style="display:inline-flex;align-items:center;gap:7px">
+                    <span style="width:12px;height:12px;border-radius:50%;background:#29B6F6;display:inline-block"></span>
+                    Telegram Mini App
+                  </span>
+                </td>
+                <td style="text-align:right;font-weight:600">{{ tg_req }}</td>
+                <td style="text-align:right" class="dim">
+                  {% if total %}{% widthratio tg_req total 100 %}%{% else %}—{% endif %}
+                </td>
+                <td style="text-align:right">{{ tg_vis }}</td>
+              </tr>
+              <tr>
+                <td>
+                  <span style="display:inline-flex;align-items:center;gap:7px">
+                    <span style="width:12px;height:12px;border-radius:50%;background:#66BB6A;display:inline-block"></span>
+                    Веб / прямой
+                  </span>
+                </td>
+                <td style="text-align:right;font-weight:600">{{ web_req }}</td>
+                <td style="text-align:right" class="dim">
+                  {% if total %}{% widthratio web_req total 100 %}%{% else %}—{% endif %}
+                </td>
+                <td style="text-align:right">{{ web_vis }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="margin:12px 0 0;font-size:12px;color:#aaa">
+            Telegram определяется по вызовам <code>/api/tg/</code> в рамках той же сессии.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline chart — split по источнику -->
   <div class="chart-row chart-row-1" style="margin-bottom:16px">
     <div class="chart-card">
-      <h2>Запросы по времени</h2>
+      <h2>Запросы по времени <span style="font-weight:400;color:#aaa;font-size:11px;text-transform:none;letter-spacing:0">— по источнику</span></h2>
       <canvas id="chartTimeline"></canvas>
     </div>
   </div>
@@ -276,40 +337,76 @@
 <!-- ── Charts ────────────────────────────────────────────────────────────── -->
 <script>
 (function(){
-  const tlLabels  = {{ tl_labels_json|safe }};
-  const tlData    = {{ tl_data_json|safe }};
-  const evtLabels = {{ evt_labels_json|safe }};
-  const evtData   = {{ evt_data_json|safe }};
-  const evtColors = {{ evt_colors_json|safe }};
-  const scLabels  = {{ sc_labels_json|safe }};
-  const scData    = {{ sc_data_json|safe }};
-  const scColors  = {{ sc_colors_json|safe }};
+  const tlSrcLabels = {{ tl_src_labels_json|safe }};
+  const tlTgData    = {{ tl_tg_json|safe }};
+  const tlWebData   = {{ tl_web_json|safe }};
+  const evtLabels   = {{ evt_labels_json|safe }};
+  const evtData     = {{ evt_data_json|safe }};
+  const evtColors   = {{ evt_colors_json|safe }};
+  const scLabels    = {{ sc_labels_json|safe }};
+  const scData      = {{ sc_data_json|safe }};
+  const scColors    = {{ sc_colors_json|safe }};
 
   Chart.defaults.font.family = "Inter, -apple-system, sans-serif";
   Chart.defaults.font.size   = 12;
 
-  // Timeline
+  // Timeline — stacked: Telegram + Web
   new Chart(document.getElementById('chartTimeline'), {
-    type: 'line',
+    type: 'bar',
     data: {
-      labels: tlLabels,
+      labels: tlSrcLabels,
+      datasets: [
+        {
+          label: 'Telegram',
+          data: tlTgData,
+          backgroundColor: 'rgba(41,182,246,.85)',
+          borderRadius: 3,
+          stack: 'src',
+        },
+        {
+          label: 'Веб / прямой',
+          data: tlWebData,
+          backgroundColor: 'rgba(102,187,106,.85)',
+          borderRadius: 3,
+          stack: 'src',
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
+      },
+      scales: {
+        y: { beginAtZero: true, stacked: true, grid: { color: '#f0f0f0' } },
+        x: { stacked: true, grid: { display: false },
+             ticks: { maxTicksLimit: 24, maxRotation: 0 } }
+      }
+    }
+  });
+
+  // Source doughnut
+  new Chart(document.getElementById('chartSource'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Telegram', 'Веб / прямой'],
       datasets: [{
-        label: 'Запросов',
-        data: tlData,
-        borderColor: '#417690',
-        backgroundColor: 'rgba(65,118,144,.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: tlLabels.length > 30 ? 0 : 3,
+        data: [{{ tg_req }}, {{ web_req }}],
+        backgroundColor: ['#29B6F6', '#66BB6A'],
+        borderWidth: 2,
       }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-        x: { grid: { display: false } }
-      }
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed} запр.`
+          }
+        }
+      },
+      cutout: '65%',
     }
   });
 
