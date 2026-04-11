@@ -1,0 +1,354 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Дашборд активности{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── layout ─────────────────────────────────────────── */
+  .db-wrap   { max-width:1400px; padding:0 0 40px; }
+  .db-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+  .db-header h1 { margin:0; font-size:22px; }
+
+  /* period tabs */
+  .period-tabs { display:flex; gap:6px; margin-left:auto; }
+  .period-tabs a {
+    padding:6px 16px; border-radius:20px; font-size:13px; font-weight:500;
+    text-decoration:none; border:1px solid #ccc; color:#444;
+    transition: background .15s, color .15s;
+  }
+  .period-tabs a.active,
+  .period-tabs a:hover { background:#417690; color:#fff; border-color:#417690; }
+
+  /* KPI cards */
+  .kpi-row   { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  @media(max-width:900px){ .kpi-row{ grid-template-columns:repeat(2,1fr); } }
+  .kpi-card  {
+    background:#fff; border-radius:10px; padding:20px 24px;
+    border:1px solid #e0e0e0; box-shadow:0 1px 4px rgba(0,0,0,.06);
+  }
+  .kpi-card__label { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .kpi-card__value { font-size:32px; font-weight:700; color:#1a1a1a; line-height:1; }
+  .kpi-card__sub   { font-size:12px; color:#aaa; margin-top:4px; }
+  .kpi-card--warn  .kpi-card__value { color:#f44336; }
+
+  /* chart grid */
+  .chart-row    { display:grid; gap:16px; margin-bottom:16px; }
+  .chart-row-1  { grid-template-columns:1fr; }
+  .chart-row-2  { grid-template-columns:1fr 1fr; }
+  .chart-row-3  { grid-template-columns:2fr 1fr; }
+  @media(max-width:900px){
+    .chart-row-2, .chart-row-3 { grid-template-columns:1fr; }
+  }
+  .chart-card {
+    background:#fff; border-radius:10px; padding:20px 24px;
+    border:1px solid #e0e0e0; box-shadow:0 1px 4px rgba(0,0,0,.06);
+  }
+  .chart-card h2 { font-size:14px; font-weight:600; color:#555; margin:0 0 16px; text-transform:uppercase; letter-spacing:.5px; }
+  .chart-card canvas { max-height:260px; }
+
+  /* tables */
+  .db-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .db-table th {
+    text-align:left; padding:8px 10px; border-bottom:2px solid #eee;
+    font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:#888;
+    font-weight:600;
+  }
+  .db-table td { padding:8px 10px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
+  .db-table tr:last-child td { border-bottom:none; }
+  .db-table tr:hover td { background:#fafafa; }
+
+  .badge {
+    display:inline-block; padding:2px 8px; border-radius:10px;
+    font-size:11px; color:#fff; font-weight:500; white-space:nowrap;
+  }
+  .mono { font-family:monospace; font-size:12px; }
+  .dim  { color:#aaa; }
+  .uid-link { font-family:monospace; font-size:11px; color:#417690; text-decoration:none; }
+  .uid-link:hover { text-decoration:underline; }
+  .method-badge {
+    display:inline-block; padding:1px 6px; border-radius:4px; font-size:11px;
+    font-weight:700; background:#eee; color:#555; font-family:monospace;
+  }
+  .method-GET    { background:#e3f2fd; color:#1565c0; }
+  .method-POST   { background:#e8f5e9; color:#2e7d32; }
+  .method-PUT,
+  .method-PATCH  { background:#fff8e1; color:#f57f17; }
+  .method-DELETE { background:#ffebee; color:#b71c1c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="db-wrap">
+
+  <!-- Header + period selector -->
+  <div class="db-header">
+    <h1>Дашборд активности</h1>
+    <span style="color:#888;font-size:13px">
+      {{ start|date:"d.m.Y H:i" }} — {{ now|date:"d.m.Y H:i" }}
+    </span>
+    <div class="period-tabs">
+      <a href="?period=1"  {% if period == 1  %}class="active"{% endif %}>Сегодня</a>
+      <a href="?period=7"  {% if period == 7  %}class="active"{% endif %}>7 дней</a>
+      <a href="?period=30" {% if period == 30 %}class="active"{% endif %}>30 дней</a>
+    </div>
+    <a href="{% url 'admin:activity_activitylog_changelist' %}"
+       style="font-size:13px;color:#417690;text-decoration:none">← Список логов</a>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-card__label">Запросов</div>
+      <div class="kpi-card__value">{{ total }}</div>
+      <div class="kpi-card__sub">за период</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Уникальных посетителей</div>
+      <div class="kpi-card__value">{{ unique }}</div>
+      <div class="kpi-card__sub">по session UID</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Среднее время ответа</div>
+      <div class="kpi-card__value">{{ avg_ms }}<span style="font-size:16px;font-weight:400;color:#888"> мс</span></div>
+      <div class="kpi-card__sub">по всем запросам</div>
+    </div>
+    <div class="kpi-card {% if err_rate > 1 %}kpi-card--warn{% endif %}">
+      <div class="kpi-card__label">Ошибки 5xx</div>
+      <div class="kpi-card__value">{{ err_rate }}<span style="font-size:16px;font-weight:400;color:#888"> %</span></div>
+      <div class="kpi-card__sub">от общего числа</div>
+    </div>
+  </div>
+
+  <!-- Timeline chart -->
+  <div class="chart-row chart-row-1" style="margin-bottom:16px">
+    <div class="chart-card">
+      <h2>Запросы по времени</h2>
+      <canvas id="chartTimeline"></canvas>
+    </div>
+  </div>
+
+  <!-- Event types + Status codes -->
+  <div class="chart-row chart-row-2" style="margin-bottom:16px">
+    <div class="chart-card">
+      <h2>Типы событий</h2>
+      <canvas id="chartEvents"></canvas>
+    </div>
+    <div class="chart-card">
+      <h2>Статус-коды</h2>
+      <canvas id="chartStatus"></canvas>
+    </div>
+  </div>
+
+  <!-- Top pages + Top visitors -->
+  <div class="chart-row chart-row-3" style="margin-bottom:16px">
+
+    <div class="chart-card">
+      <h2>Топ страниц</h2>
+      {% if top_pages %}
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Путь</th>
+            <th style="text-align:right">Хиты</th>
+            <th style="text-align:right">Ср. мс</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in top_pages %}
+          <tr>
+            <td class="dim">{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'admin:activity_activitylog_changelist' %}?path={{ p.path|urlencode }}"
+                 style="color:#417690;text-decoration:none;font-size:12px;font-family:monospace">
+                {{ p.path|truncatechars:55 }}
+              </a>
+            </td>
+            <td style="text-align:right;font-weight:600">{{ p.hits }}</td>
+            <td style="text-align:right" class="dim">{{ p.avg_ms }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="dim">Нет данных</p>
+      {% endif %}
+    </div>
+
+    <div class="chart-card">
+      <h2>Топ посетителей</h2>
+      {% if top_vis %}
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>UID</th>
+            <th style="text-align:right">Запр.</th>
+            <th style="text-align:right">Стр.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in top_vis %}
+          <tr>
+            <td>
+              <a href="{{ v.filter_url }}" class="uid-link">{{ v.uid }}</a>
+            </td>
+            <td style="text-align:right;font-weight:600">{{ v.requests }}</td>
+            <td style="text-align:right" class="dim">{{ v.pages }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="dim">Нет данных</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Top API + Recent errors -->
+  <div class="chart-row chart-row-2">
+
+    {% if top_api %}
+    <div class="chart-card">
+      <h2>Топ API-путей</h2>
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>Метод</th>
+            <th>Путь</th>
+            <th style="text-align:right">Вызовов</th>
+            <th style="text-align:right">Ср. мс</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in top_api %}
+          <tr>
+            <td>
+              <span class="method-badge method-{{ a.method }}">{{ a.method }}</span>
+            </td>
+            <td class="mono">{{ a.path|truncatechars:45 }}</td>
+            <td style="text-align:right;font-weight:600">{{ a.hits }}</td>
+            <td style="text-align:right" class="dim">{{ a.avg_ms }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="chart-card">
+      <h2>Последние ошибки (4xx / 5xx)</h2>
+      {% if recent_errors %}
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Код</th>
+            <th>Путь</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in recent_errors %}
+          <tr>
+            <td class="dim" style="white-space:nowrap">{{ e.timestamp|date:"d.m H:i" }}</td>
+            <td>
+              {% if e.status_code >= 500 %}
+                <span class="badge" style="background:#b71c1c">{{ e.status_code }}</span>
+              {% else %}
+                <span class="badge" style="background:#f44336">{{ e.status_code }}</span>
+              {% endif %}
+            </td>
+            <td class="mono" style="font-size:11px">{{ e.path|truncatechars:40 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:#4CAF50;font-weight:600">Ошибок нет</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── Charts ────────────────────────────────────────────────────────────── -->
+<script>
+(function(){
+  const tlLabels  = {{ tl_labels_json|safe }};
+  const tlData    = {{ tl_data_json|safe }};
+  const evtLabels = {{ evt_labels_json|safe }};
+  const evtData   = {{ evt_data_json|safe }};
+  const evtColors = {{ evt_colors_json|safe }};
+  const scLabels  = {{ sc_labels_json|safe }};
+  const scData    = {{ sc_data_json|safe }};
+  const scColors  = {{ sc_colors_json|safe }};
+
+  Chart.defaults.font.family = "Inter, -apple-system, sans-serif";
+  Chart.defaults.font.size   = 12;
+
+  // Timeline
+  new Chart(document.getElementById('chartTimeline'), {
+    type: 'line',
+    data: {
+      labels: tlLabels,
+      datasets: [{
+        label: 'Запросов',
+        data: tlData,
+        borderColor: '#417690',
+        backgroundColor: 'rgba(65,118,144,.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: tlLabels.length > 30 ? 0 : 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Event types — doughnut
+  new Chart(document.getElementById('chartEvents'), {
+    type: 'doughnut',
+    data: {
+      labels: evtLabels,
+      datasets: [{ data: evtData, backgroundColor: evtColors, borderWidth: 2 }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 14, padding: 12 } }
+      },
+      cutout: '62%'
+    }
+  });
+
+  // Status codes — bar
+  new Chart(document.getElementById('chartStatus'), {
+    type: 'bar',
+    data: {
+      labels: scLabels,
+      datasets: [{
+        data: scData,
+        backgroundColor: scColors,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

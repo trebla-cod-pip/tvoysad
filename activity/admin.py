@@ -1,16 +1,209 @@
+import json
+from datetime import timedelta
+
 from django.contrib import admin
+from django.db.models import Avg, Count, Q
+from django.db.models.functions import TruncDate, TruncHour
+from django.shortcuts import render
+from django.urls import path, reverse
+from django.utils import timezone
+from django.utils.html import format_html
+
 from .models import ActivityLog
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+EVENT_COLORS = {
+    'pageview': '#4CAF50',
+    'api':      '#2196F3',
+    'auth':     '#FF9800',
+    'form':     '#9C27B0',
+    'error':    '#f44336',
+    'other':    '#9E9E9E',
+}
+
+STATUS_COLOR = {
+    '2': '#4CAF50',   # 2xx
+    '3': '#FF9800',   # 3xx
+    '4': '#F44336',   # 4xx
+    '5': '#B71C1C',   # 5xx
+}
+
+
+def _status_color(code):
+    return STATUS_COLOR.get(str(code)[0], '#9E9E9E')
+
+
+def _build_dashboard_context(request, admin_site):
+    period = int(request.GET.get('period', 1))
+    period = period if period in (1, 7, 30) else 1
+
+    now  = timezone.now()
+    start = now - timedelta(days=period)
+    qs = ActivityLog.objects.filter(timestamp__gte=start)
+
+    # ── KPI ──────────────────────────────────────────────────────────────────
+    total    = qs.count()
+    unique   = qs.values('uid').distinct().count()
+    avg_ms   = round(qs.aggregate(a=Avg('response_time_ms'))['a'] or 0)
+    err_cnt  = qs.filter(status_code__gte=500).count()
+    err_rate = round(err_cnt / total * 100, 1) if total else 0
+
+    # ── Timeline ─────────────────────────────────────────────────────────────
+    if period == 1:
+        tl_qs = (
+            qs.annotate(t=TruncHour('timestamp'))
+              .values('t').annotate(n=Count('id')).order_by('t')
+        )
+        tl_labels = [r['t'].strftime('%H:%M') for r in tl_qs]
+    else:
+        tl_qs = (
+            qs.annotate(t=TruncDate('timestamp'))
+              .values('t').annotate(n=Count('id')).order_by('t')
+        )
+        tl_labels = [r['t'].strftime('%d.%m') for r in tl_qs]
+    tl_data   = [r['n'] for r in tl_qs]
+
+    # ── Event types ───────────────────────────────────────────────────────────
+    evt_rows   = list(qs.values('event_type').annotate(n=Count('id')).order_by('-n'))
+    evt_labels = [r['event_type'] for r in evt_rows]
+    evt_data   = [r['n']          for r in evt_rows]
+    evt_colors = [EVENT_COLORS.get(e, '#9E9E9E') for e in evt_labels]
+
+    # ── Status codes ─────────────────────────────────────────────────────────
+    sc_rows   = list(qs.values('status_code').annotate(n=Count('id')).order_by('status_code'))
+    sc_labels = [str(r['status_code']) for r in sc_rows]
+    sc_data   = [r['n']               for r in sc_rows]
+    sc_colors = [_status_color(r['status_code']) for r in sc_rows]
+
+    # ── Top pages ─────────────────────────────────────────────────────────────
+    top_pages = list(
+        qs.exclude(event_type='api')
+          .values('path')
+          .annotate(hits=Count('id'), avg_ms=Avg('response_time_ms'))
+          .order_by('-hits')[:15]
+    )
+    for p in top_pages:
+        p['avg_ms'] = round(p['avg_ms'] or 0)
+
+    # ── Top visitors ─────────────────────────────────────────────────────────
+    top_vis = list(
+        qs.values('uid')
+          .annotate(requests=Count('id'), pages=Count('path', distinct=True))
+          .order_by('-requests')[:10]
+    )
+    # добавить ссылку фильтра на список
+    for v in top_vis:
+        v['filter_url'] = (
+            reverse('admin:activity_activitylog_changelist') + f'?uid={v["uid"]}'
+        )
+
+    # ── Top API paths ─────────────────────────────────────────────────────────
+    top_api = list(
+        qs.filter(event_type='api')
+          .values('path', 'method')
+          .annotate(hits=Count('id'), avg_ms=Avg('response_time_ms'))
+          .order_by('-hits')[:10]
+    )
+    for a in top_api:
+        a['avg_ms'] = round(a['avg_ms'] or 0)
+
+    # ── Recent errors ─────────────────────────────────────────────────────────
+    recent_errors = list(
+        qs.filter(status_code__gte=400)
+          .order_by('-timestamp')
+          .values('timestamp', 'method', 'path', 'status_code', 'uid', 'response_time_ms')[:20]
+    )
+
+    return {
+        **admin_site.each_context(request),
+        'title':        'Дашборд активности',
+        'period':        period,
+        'start':         start,
+        'now':           now,
+        # KPIs
+        'total':         total,
+        'unique':        unique,
+        'avg_ms':        avg_ms,
+        'err_rate':      err_rate,
+        # Charts (JSON)
+        'tl_labels_json':  json.dumps(tl_labels,  ensure_ascii=False),
+        'tl_data_json':    json.dumps(tl_data),
+        'evt_labels_json': json.dumps(evt_labels, ensure_ascii=False),
+        'evt_data_json':   json.dumps(evt_data),
+        'evt_colors_json': json.dumps(evt_colors),
+        'sc_labels_json':  json.dumps(sc_labels),
+        'sc_data_json':    json.dumps(sc_data),
+        'sc_colors_json':  json.dumps(sc_colors),
+        # Tables
+        'top_pages':     top_pages,
+        'top_vis':       top_vis,
+        'top_api':       top_api,
+        'recent_errors': recent_errors,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Admin
+# ─────────────────────────────────────────────────────────────────────────────
+
 @admin.register(ActivityLog)
 class ActivityLogAdmin(admin.ModelAdmin):
-    list_display  = ('timestamp', 'uid', 'event_type', 'method', 'path',
-                     'status_code', 'response_time_ms', 'ip_address', 'user_id')
-    list_filter   = ('event_type', 'method', 'status_code')
-    search_fields = ('uid', 'path', 'ip_address', 'user_agent')
+    list_display   = ('timestamp', 'event_badge', 'method', 'path_short',
+                      'status_badge', 'response_time_ms', 'uid', 'ip_address', 'user_id')
+    list_filter    = ('event_type', 'method', 'status_code')
+    search_fields  = ('uid', 'path', 'ip_address', 'user_agent')
     readonly_fields = [f.name for f in ActivityLog._meta.fields]
-    ordering      = ('-timestamp',)
+    ordering       = ('-timestamp',)
     date_hierarchy = 'timestamp'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path('dashboard/',
+                 self.admin_site.admin_view(self.dashboard_view),
+                 name='activity_dashboard'),
+        ]
+        return custom + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['dashboard_url'] = reverse('admin:activity_dashboard')
+        return super().changelist_view(request, extra_context)
+
+    def dashboard_view(self, request):
+        ctx = _build_dashboard_context(request, self.admin_site)
+        return render(request, 'admin/activity/dashboard.html', ctx)
+
+    # ── Display helpers ───────────────────────────────────────────────────────
+
+    def path_short(self, obj):
+        p = obj.path
+        return p if len(p) <= 60 else p[:57] + '…'
+    path_short.short_description = 'Путь'
+
+    def event_badge(self, obj):
+        color = EVENT_COLORS.get(obj.event_type, '#9E9E9E')
+        labels = dict(ActivityLog.EVENT_CHOICES)
+        label  = labels.get(obj.event_type, obj.event_type)
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;white-space:nowrap">{}</span>',
+            color, label,
+        )
+    event_badge.short_description = 'Тип'
+
+    def status_badge(self, obj):
+        color = _status_color(obj.status_code)
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:12px">{}</span>',
+            color, obj.status_code,
+        )
+    status_badge.short_description = 'Статус'
 
     def has_add_permission(self, request):
         return False
