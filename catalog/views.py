@@ -56,7 +56,7 @@ def home(request):
     categories = Category.objects.filter(
         is_active=True,
         parent=None,
-    ).annotate(products_count=Count('products', filter=Q(products__is_active=True)))[:8]
+    ).annotate(products_count=Count('products', filter=Q(products__is_active=True))).order_by('sort_order', 'name')[:8]
 
     return render(
         request,
@@ -74,7 +74,7 @@ def catalog(request):
     categories = Category.objects.filter(
         is_active=True,
         parent=None,
-    ).annotate(products_count=Count('products', filter=Q(products__is_active=True)))
+    ).annotate(products_count=Count('products', filter=Q(products__is_active=True))).order_by('sort_order', 'name')
 
     category_slug = request.GET.get('category')
     tag = request.GET.get('tag')
