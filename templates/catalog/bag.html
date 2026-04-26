@@ -66,26 +66,9 @@
 </div>
 
 <script>
-const prices = { {% for item in items %}'{{ item.cart_key }}': {{ item.price }},{% endfor %} };
+const prices = {{ prices_json }};
 const URL_UPDATE = '{% url "cart_update" %}';
 const URL_REMOVE = '{% url "cart_remove" %}';
-
-function getCSRF() {
-  const input = document.querySelector('#csrf-form [name=csrfmiddlewaretoken]');
-  if (input) return input.value;
-  const m = document.cookie.match('(^|;)\\s*csrftoken=([^;]+)');
-  return m ? m[2] : '';
-}
-
-async function cartPost(url, data) {
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRF()},
-    body: JSON.stringify(data),
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
 
 async function updateQty(idx, cartKey, delta) {
   const el = document.getElementById('qty-' + idx);
@@ -93,7 +76,7 @@ async function updateQty(idx, cartKey, delta) {
   const newQty = Math.max(1, parseInt(el.textContent) + delta);
   el.textContent = newQty;
   try {
-    const data = await cartPost(URL_UPDATE, {cart_key: cartKey, qty: newQty});
+    const data = await apiPost(URL_UPDATE, {cart_key: cartKey, qty: newQty});
     const subtotal = Math.round(prices[cartKey] * newQty);
     document.getElementById('subtotal-' + idx).textContent = subtotal.toLocaleString('ru') + ' ₽';
     document.getElementById('price-' + idx).textContent    = subtotal.toLocaleString('ru') + ' ₽';
@@ -112,11 +95,12 @@ async function updateQty(idx, cartKey, delta) {
 async function removeItem(idx, cartKey) {
   const row = document.getElementById('cart-row-' + idx);
   try {
-    await cartPost(URL_REMOVE, {cart_key: cartKey});
+    await apiPost(URL_REMOVE, {cart_key: cartKey});
     if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; }
     setTimeout(() => location.reload(), 350);
   } catch(e) {
     console.error('removeItem error:', e);
+    alert('Не удалось удалить товар. Обновите страницу и попробуйте снова.');
   }
 }
 </script>

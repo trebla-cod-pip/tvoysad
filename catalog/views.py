@@ -192,6 +192,7 @@ def item(request, slug):
 def bag(request):
     cart = get_cart(request)
     items, total, count = build_cart_items(cart)
+    prices_json = json.dumps({item['cart_key']: round(float(item['price'])) for item in items})
     return render(
         request,
         'catalog/bag.html',
@@ -199,6 +200,7 @@ def bag(request):
             'items': items,
             'total': total,
             'count': count,
+            'prices_json': prices_json,
         },
     )
 
