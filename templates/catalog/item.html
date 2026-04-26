@@ -190,27 +190,34 @@
 
 <script>
 {% if age_variants %}
-const AGE_VARIANTS = { {% for v in age_variants %}'{{ v.age_years }}': {{ v.price }},{% endfor %} };
+const AGE_VARIANTS = { {% for v in age_variants %}{{ v.age_years }}: {{ v.price|floatformat:0 }},{% endfor %} };
 let selectedAge = {{ age_variants.0.age_years }};
 
+// Сразу показываем цену первого варианта
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('itemPrice').textContent =
+    AGE_VARIANTS[selectedAge].toLocaleString('ru') + ' ₽';
+});
+
 function selectAge(btn) {
-  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('age-btn--active'));
+  document.querySelectorAll('.age-btn').forEach(function(b) {
+    b.classList.remove('age-btn--active');
+  });
   btn.classList.add('age-btn--active');
-  selectedAge = parseInt(btn.dataset.age);
-  const price = AGE_VARIANTS[selectedAge];
-  document.getElementById('itemPrice').textContent = Math.round(price).toLocaleString('ru') + ' ₽';
+  selectedAge = parseInt(btn.dataset.age, 10);
+  document.getElementById('itemPrice').textContent =
+    AGE_VARIANTS[selectedAge].toLocaleString('ru') + ' ₽';
 }
 {% else %}
 let selectedAge = null;
 {% endif %}
 
 function changeQty(delta) {
-  const el = document.getElementById('qty');
-  const v = Math.max(1, parseInt(el.textContent) + delta);
-  el.textContent = v;
+  var el = document.getElementById('qty');
+  el.textContent = Math.max(1, parseInt(el.textContent, 10) + delta);
 }
 function addToCartWithQty(slug) {
-  const qty = parseInt(document.getElementById('qty').textContent);
+  var qty = parseInt(document.getElementById('qty').textContent, 10);
   addToCart(slug, qty, selectedAge);
 }
 function switchImage(url, thumb) {
