@@ -13,7 +13,7 @@
   <div class="bag-layout">
     <div>
       {% for item in items %}
-      <div class="cart-item" id="cart-row-{{ item.cart_key|urlencode }}">
+      <div class="cart-item" id="cart-row-{{ forloop.counter }}">
         {% if item.product.image %}
           {% webp_best_url item.product.image 160 as cart_img_url %}
           <img src="{{ cart_img_url }}" alt="{{ item.product.name }}" class="cart-item__img" loading="lazy" decoding="async" width="80" height="80">
@@ -23,15 +23,15 @@
         <div>
           <div class="cart-item__name">{{ item.product.name }}{% if item.age_label %} <span style="font-size:13px;font-weight:400;color:var(--muted-foreground)">({{ item.age_label }})</span>{% endif %}</div>
           {% if item.product.category %}<div class="cart-item__cat">{{ item.product.category.name }}</div>{% endif %}
-          <div class="cart-item__price" id="price-{{ item.cart_key|urlencode }}">{{ item.subtotal|floatformat:0 }} ₽</div>
+          <div class="cart-item__price" id="price-{{ forloop.counter }}">{{ item.subtotal|floatformat:0 }} ₽</div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-            <button class="qty-btn" onclick="updateQty('{{ item.cart_key }}', -1)">−</button>
-            <span id="qty-{{ item.cart_key|urlencode }}">{{ item.qty }}</span>
-            <button class="qty-btn" onclick="updateQty('{{ item.cart_key }}', 1)">+</button>
+            <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', -1)">−</button>
+            <span id="qty-{{ forloop.counter }}">{{ item.qty }}</span>
+            <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', 1)">+</button>
           </div>
-          <span class="cart-item__remove" onclick="removeItem('{{ item.cart_key }}')">Удалить</span>
+          <span class="cart-item__remove" onclick="removeItem({{ forloop.counter }}, '{{ item.cart_key }}')">Удалить</span>
         </div>
-        <div style="font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap" id="subtotal-{{ item.cart_key|urlencode }}">{{ item.subtotal|floatformat:0 }} ₽</div>
+        <div style="font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap" id="subtotal-{{ forloop.counter }}">{{ item.subtotal|floatformat:0 }} ₽</div>
       </div>
       {% endfor %}
     </div>
@@ -71,6 +71,8 @@ const URL_UPDATE = '{% url "cart_update" %}';
 const URL_REMOVE = '{% url "cart_remove" %}';
 
 function getCSRF() {
+  const input = document.querySelector('#csrf-form [name=csrfmiddlewaretoken]');
+  if (input) return input.value;
   const m = document.cookie.match('(^|;)\\s*csrftoken=([^;]+)');
   return m ? m[2] : '';
 }
@@ -85,20 +87,16 @@ async function cartPost(url, data) {
   return r.json();
 }
 
-function safeId(cartKey) {
-  return cartKey.replace('|', '\\|');
-}
-
-async function updateQty(cartKey, delta) {
-  const el = document.getElementById('qty-' + CSS.escape(cartKey));
+async function updateQty(idx, cartKey, delta) {
+  const el = document.getElementById('qty-' + idx);
   if (!el) return;
   const newQty = Math.max(1, parseInt(el.textContent) + delta);
   el.textContent = newQty;
   try {
     const data = await cartPost(URL_UPDATE, {cart_key: cartKey, qty: newQty});
     const subtotal = Math.round(prices[cartKey] * newQty);
-    document.getElementById('subtotal-' + CSS.escape(cartKey)).textContent = subtotal.toLocaleString('ru') + ' ₽';
-    document.getElementById('price-' + CSS.escape(cartKey)).textContent    = subtotal.toLocaleString('ru') + ' ₽';
+    document.getElementById('subtotal-' + idx).textContent = subtotal.toLocaleString('ru') + ' ₽';
+    document.getElementById('price-' + idx).textContent    = subtotal.toLocaleString('ru') + ' ₽';
     document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
     document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
     document.querySelectorAll('.cart-count').forEach(b => {
@@ -111,8 +109,8 @@ async function updateQty(cartKey, delta) {
   }
 }
 
-async function removeItem(cartKey) {
-  const row = document.getElementById('cart-row-' + CSS.escape(cartKey));
+async function removeItem(idx, cartKey) {
+  const row = document.getElementById('cart-row-' + idx);
   try {
     await cartPost(URL_REMOVE, {cart_key: cartKey});
     if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; }
