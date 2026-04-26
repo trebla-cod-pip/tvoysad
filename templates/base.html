@@ -76,13 +76,15 @@
         el.style.display = count > 0 ? 'flex' : 'none';
       });
     }
-    async function addToCart(slug, qty = 1) {
-      const data = await apiPost('{% url "cart_add" %}', {slug, qty});
+    async function addToCart(slug, qty = 1, age_years = null) {
+      const payload = {slug, qty};
+      if (age_years) payload.age_years = age_years;
+      const data = await apiPost('{% url "cart_add" %}', payload);
       updateCartBadge(data.count);
       showToast('Добавлено в корзину');
     }
-    async function removeFromCart(slug) {
-      const data = await apiPost('{% url "cart_remove" %}', {slug});
+    async function removeFromCart(cart_key) {
+      const data = await apiPost('{% url "cart_remove" %}', {cart_key});
       updateCartBadge(data.count);
     }
     function showToast(msg) {

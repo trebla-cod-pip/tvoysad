@@ -503,6 +503,19 @@ input, textarea, select { font-family: inherit; }
 .item-price-block { display: flex; align-items: baseline; gap: 12px; margin: 16px 0; }
 .item-price { font-size: 32px; font-weight: 700; color: var(--primary); }
 .item-old-price { font-size: 18px; color: var(--muted-foreground); text-decoration: line-through; }
+.age-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+  background: var(--background);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--foreground);
+  transition: border-color .15s, background .15s, color .15s;
+}
+.age-btn:hover { border-color: var(--primary); color: var(--primary); }
+.age-btn--active { border-color: var(--primary); background: var(--primary); color: #fff; }
 .specifications {
   background: var(--secondary);
   border-radius: var(--radius-lg);

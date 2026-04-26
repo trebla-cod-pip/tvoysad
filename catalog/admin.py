@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, ProductSpecification
+from .models import Category, Product, ProductAgeVariant, ProductImage, ProductSpecification
 
 
 class ProductImageInline(admin.TabularInline):
@@ -12,6 +12,12 @@ class ProductSpecificationInline(admin.TabularInline):
     model = ProductSpecification
     extra = 3
     fields = ('label', 'value', 'icon', 'sort_order')
+
+
+class ProductAgeVariantInline(admin.TabularInline):
+    model = ProductAgeVariant
+    extra = 2
+    fields = ('age_years', 'price', 'stock')
 
 
 @admin.register(Category)
@@ -34,7 +40,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_featured', 'category')
     search_fields = ('name', 'sku')
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [ProductImageInline, ProductSpecificationInline]
+    inlines = [ProductImageInline, ProductSpecificationInline, ProductAgeVariantInline]
     readonly_fields = ('created_at', 'updated_at', 'rating', 'rating_count')
     fieldsets = (
         ('Основное', {

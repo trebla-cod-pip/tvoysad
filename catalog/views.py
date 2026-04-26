@@ -9,7 +9,7 @@ from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Category, Product
+from .models import Category, Product, ProductAgeVariant
 from .serializers import CategorySerializer, ProductDetailSerializer, ProductListSerializer
 
 
@@ -22,26 +22,61 @@ def save_cart(request, cart):
     request.session.modified = True
 
 
+def parse_cart_key(key):
+    """Returns (slug, age_years_or_None). Key format: 'slug' or 'slug|3'."""
+    if '|' in key:
+        slug, age = key.rsplit('|', 1)
+        return slug, int(age)
+    return key, None
+
+
 def build_cart_items(cart):
-    """Build cart items with one query instead of per-item lookups."""
-    slugs = list(cart.keys())
+    parsed = {key: parse_cart_key(key) for key in cart}
+    slugs = list({slug for slug, _ in parsed.values()})
     products = {
-        product.slug: product
-        for product in Product.objects.filter(slug__in=slugs, is_active=True).select_related('category')
+        p.slug: p
+        for p in Product.objects.filter(slug__in=slugs, is_active=True).select_related('category')
     }
+
+    age_variant_keys = {(slug, age) for _, (slug, age) in parsed.items() if age is not None}
+    age_variants = {}
+    if age_variant_keys:
+        qs = ProductAgeVariant.objects.filter(
+            product__slug__in=[s for s, _ in age_variant_keys],
+        ).select_related('product')
+        for v in qs:
+            age_variants[(v.product.slug, v.age_years)] = v
 
     items = []
     total = 0
     count = 0
 
-    for slug, qty in cart.items():
+    for cart_key, qty in cart.items():
+        slug, age_years = parsed[cart_key]
         product = products.get(slug)
         if not product:
             continue
-        subtotal = product.price * qty
+
+        if age_years is not None:
+            variant = age_variants.get((slug, age_years))
+            price = variant.price if variant else product.price
+            age_label = variant.age_label if variant else f'{age_years} лет'
+        else:
+            price = product.price
+            age_label = None
+
+        subtotal = price * qty
         total += subtotal
         count += qty
-        items.append({'product': product, 'qty': qty, 'subtotal': subtotal})
+        items.append({
+            'product': product,
+            'qty': qty,
+            'subtotal': subtotal,
+            'price': price,
+            'age_years': age_years,
+            'age_label': age_label,
+            'cart_key': cart_key,
+        })
 
     return items, total, count
 
@@ -126,10 +161,11 @@ def item(request, slug):
     product = get_object_or_404(
         Product.objects.filter(is_active=True)
         .select_related('category')
-        .prefetch_related('images', 'specifications'),
+        .prefetch_related('images', 'specifications', 'age_variants'),
         slug=slug,
     )
     gallery_images = list(product.images.all())
+    age_variants = list(product.age_variants.all())
     related = (
         Product.objects.filter(category=product.category, is_active=True)
         .exclude(id=product.id)
@@ -145,6 +181,7 @@ def item(request, slug):
         {
             'product': product,
             'gallery_images': gallery_images,
+            'age_variants': age_variants,
             'related_products': related,
             'reviews': reviews,
         },
@@ -192,7 +229,7 @@ def checkout(request):
                 order=order,
                 product=item['product'],
                 quantity=item['qty'],
-                price=item['product'].price,
+                price=item['price'],
             )
         save_cart(request, {})
         return redirect('order_success')
@@ -229,8 +266,10 @@ def cart_add(request):
     data = json.loads(request.body)
     slug = data.get('slug')
     qty = int(data.get('qty', 1))
+    age_years = data.get('age_years')
+    cart_key = f'{slug}|{age_years}' if age_years else slug
     cart = get_cart(request)
-    cart[slug] = cart.get(slug, 0) + qty
+    cart[cart_key] = cart.get(cart_key, 0) + qty
     save_cart(request, cart)
     return JsonResponse({'count': sum(cart.values()), 'cart': cart})
 
@@ -238,30 +277,26 @@ def cart_add(request):
 @require_POST
 def cart_update(request):
     data = json.loads(request.body)
-    slug = data.get('slug')
+    cart_key = data.get('cart_key') or data.get('slug')
     qty = int(data.get('qty', 1))
     cart = get_cart(request)
 
     if qty <= 0:
-        cart.pop(slug, None)
+        cart.pop(cart_key, None)
     else:
-        cart[slug] = qty
+        cart[cart_key] = qty
     save_cart(request, cart)
 
-    price_by_slug = {
-        product.slug: product.price
-        for product in Product.objects.filter(slug__in=cart.keys(), is_active=True).only('slug', 'price')
-    }
-    total = sum(price_by_slug.get(item_slug, 0) * item_qty for item_slug, item_qty in cart.items())
+    _, total, _ = build_cart_items(cart)
     return JsonResponse({'count': sum(cart.values()), 'cart': cart, 'total': str(total)})
 
 
 @require_POST
 def cart_remove(request):
     data = json.loads(request.body)
-    slug = data.get('slug')
+    cart_key = data.get('cart_key') or data.get('slug')
     cart = get_cart(request)
-    cart.pop(slug, None)
+    cart.pop(cart_key, None)
     save_cart(request, cart)
     return JsonResponse({'count': sum(cart.values()), 'cart': cart})
 

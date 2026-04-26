@@ -119,3 +119,29 @@ class ProductSpecification(models.Model):
 
     def __str__(self):
         return f'{self.label}: {self.value}'
+
+
+def _age_word(years):
+    if years % 10 in (2, 3, 4) and years % 100 not in (12, 13, 14):
+        return 'года'
+    return 'лет'
+
+
+class ProductAgeVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='age_variants')
+    age_years = models.PositiveSmallIntegerField('Возраст (лет)')
+    price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField('Остаток', default=100)
+
+    class Meta:
+        verbose_name = 'Возрастной вариант'
+        verbose_name_plural = 'Возрастные варианты'
+        ordering = ['age_years']
+        unique_together = [('product', 'age_years')]
+
+    def __str__(self):
+        return f'{self.product.name} — {self.age_years} {_age_word(self.age_years)}'
+
+    @property
+    def age_label(self):
+        return f'{self.age_years} {_age_word(self.age_years)}'

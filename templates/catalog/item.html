@@ -51,9 +51,25 @@
       </div>
       {% endif %}
 
+      {% if age_variants %}
+      <div class="age-selector" style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:600;color:var(--muted-foreground);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Возраст саженца</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          {% for variant in age_variants %}
+          <button class="age-btn {% if forloop.first %}age-btn--active{% endif %}"
+                  data-age="{{ variant.age_years }}"
+                  data-price="{{ variant.price }}"
+                  onclick="selectAge(this)">
+            {{ variant.age_label }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <div class="item-price-block">
-        <span class="item-price">{{ product.price|floatformat:0 }} ₽</span>
-        {% if product.old_price %}
+        <span class="item-price" id="itemPrice">{{ product.price|floatformat:0 }} ₽</span>
+        {% if product.old_price and not age_variants %}
           <span class="item-old-price">{{ product.old_price|floatformat:0 }} ₽</span>
           <span class="badge badge--sale">-{{ product.discount_percent }}%</span>
         {% endif %}
@@ -173,6 +189,21 @@
 </div>
 
 <script>
+{% if age_variants %}
+const AGE_VARIANTS = { {% for v in age_variants %}'{{ v.age_years }}': {{ v.price }},{% endfor %} };
+let selectedAge = {{ age_variants.0.age_years }};
+
+function selectAge(btn) {
+  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('age-btn--active'));
+  btn.classList.add('age-btn--active');
+  selectedAge = parseInt(btn.dataset.age);
+  const price = AGE_VARIANTS[selectedAge];
+  document.getElementById('itemPrice').textContent = Math.round(price).toLocaleString('ru') + ' ₽';
+}
+{% else %}
+let selectedAge = null;
+{% endif %}
+
 function changeQty(delta) {
   const el = document.getElementById('qty');
   const v = Math.max(1, parseInt(el.textContent) + delta);
@@ -180,7 +211,7 @@ function changeQty(delta) {
 }
 function addToCartWithQty(slug) {
   const qty = parseInt(document.getElementById('qty').textContent);
-  addToCart(slug, qty);
+  addToCart(slug, qty, selectedAge);
 }
 function switchImage(url, thumb) {
   const mainImage = document.getElementById('mainImgEl');
