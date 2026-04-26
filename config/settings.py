@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'reviews',
     'tg_users',
     'activity',
+    'ads',
 ]
 
 TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN', '')

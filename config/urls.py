@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include('pages.urls')),
     path('api/', include('reviews.urls')),
     path('api/', include('tg_users.urls')),
+    path('', include('ads.urls')),
 ]
 
 if settings.DEBUG:

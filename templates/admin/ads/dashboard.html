@@ -1,0 +1,206 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Дашборд рекламных кампаний{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .db-wrap   { max-width:1400px; padding:0 0 40px; }
+  .db-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+  .db-header h1 { margin:0; font-size:22px; }
+
+  .period-tabs { display:flex; gap:6px; margin-left:auto; }
+  .period-tabs a {
+    padding:6px 16px; border-radius:20px; font-size:13px; font-weight:500;
+    text-decoration:none; border:1px solid #ccc; color:#444;
+    transition: background .15s, color .15s;
+  }
+  .period-tabs a.active,
+  .period-tabs a:hover { background:var(--primary,#4a7c59); color:#fff; border-color:var(--primary,#4a7c59); }
+
+  /* KPI tiles */
+  .kpi-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+  .kpi-card {
+    flex:1; min-width:160px; background:#fff; border-radius:10px;
+    border:1px solid #e5e5e5; padding:18px 22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .kpi-card__label { font-size:12px; color:#888; margin-bottom:6px; }
+  .kpi-card__value { font-size:28px; font-weight:700; color:var(--primary,#4a7c59); }
+  .kpi-card__sub   { font-size:12px; color:#aaa; margin-top:4px; }
+
+  /* chart */
+  .chart-card {
+    background:#fff; border-radius:10px; border:1px solid #e5e5e5;
+    padding:20px 24px; margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .chart-card h3 { margin:0 0 16px; font-size:15px; color:#444; }
+
+  /* table */
+  .camp-table { width:100%; border-collapse:collapse; background:#fff;
+    border-radius:10px; overflow:hidden; border:1px solid #e5e5e5;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .camp-table th {
+    background:#f5f5f5; padding:10px 14px; text-align:left;
+    font-size:12px; color:#666; font-weight:600; border-bottom:1px solid #e5e5e5;
+  }
+  .camp-table td { padding:10px 14px; border-bottom:1px solid #f0f0f0; font-size:13px; vertical-align:middle; }
+  .camp-table tr:last-child td { border-bottom:none; }
+  .camp-table tr:hover td { background:#fafafa; }
+
+  .badge-active   { display:inline-block; padding:2px 8px; border-radius:20px;
+    font-size:11px; font-weight:600; background:#e8f5e9; color:#2e7d32; }
+  .badge-inactive { display:inline-block; padding:2px 8px; border-radius:20px;
+    font-size:11px; font-weight:600; background:#fce4ec; color:#c62828; }
+
+  .copy-btn {
+    padding:3px 10px; font-size:11px; cursor:pointer;
+    border:1px solid #ccc; border-radius:4px; background:#f8f8f8;
+    white-space:nowrap;
+  }
+  .copy-btn:hover { background:#eee; }
+
+  .num-big { font-size:15px; font-weight:700; color:var(--primary,#4a7c59); }
+  .num-dim { color:#999; }
+
+  @media(max-width:600px){
+    .kpi-card__value { font-size:22px; }
+    .camp-table th, .camp-table td { padding:8px 8px; font-size:12px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="db-wrap">
+
+  {# header #}
+  <div class="db-header">
+    <h1>📊 Дашборд рекламных кампаний</h1>
+    <div class="period-tabs">
+      {% for k,v in periods.items %}
+        <a href="?days={{ k }}" {% if days == v %}class="active"{% endif %}>{{ k }} дн.</a>
+      {% endfor %}
+    </div>
+    <a href="{% url 'admin:ads_adcampaign_changelist' %}"
+       style="padding:6px 14px;border-radius:6px;border:1px solid var(--primary,#4a7c59);
+              color:var(--primary,#4a7c59);text-decoration:none;font-size:13px;font-weight:500;">
+      + Кампании
+    </a>
+  </div>
+
+  {# KPI #}
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-card__label">Кликов за {{ days }} дн.</div>
+      <div class="kpi-card__value">{{ total_clicks_period }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Кликов всего</div>
+      <div class="kpi-card__value">{{ total_clicks_all }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Активных кампаний</div>
+      <div class="kpi-card__value">{{ active_campaigns }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__label">Кампаний всего</div>
+      <div class="kpi-card__value">{{ campaigns|length }}</div>
+    </div>
+  </div>
+
+  {# main chart #}
+  <div class="chart-card">
+    <h3>Клики по дням — последние {{ days }} дней</h3>
+    <canvas id="clicksChart" height="80"></canvas>
+  </div>
+
+  {# campaigns table #}
+  {% if campaigns %}
+  <table class="camp-table">
+    <thead>
+      <tr>
+        <th>Кампания</th>
+        <th>Источник</th>
+        <th>Тип</th>
+        <th>За {{ days }} дн.</th>
+        <th>Всего</th>
+        <th>График</th>
+        <th>Статус</th>
+        <th>Ссылка</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in campaigns %}
+      <tr>
+        <td>
+          <a href="{% url 'admin:ads_adcampaign_change' row.campaign.pk %}"
+             style="font-weight:600;color:#333;text-decoration:none;">
+            {{ row.campaign.name }}
+          </a>
+          <div style="font-size:11px;color:#aaa;margin-top:2px">{{ row.campaign.utm_campaign }}</div>
+        </td>
+        <td>{{ row.campaign.get_utm_source_display }}</td>
+        <td>{{ row.campaign.get_utm_medium_display }}</td>
+        <td><span class="num-big">{{ row.clicks_period }}</span></td>
+        <td><span class="num-dim">{{ row.clicks_all }}</span></td>
+        <td>{{ row.sparkline }}</td>
+        <td>
+          {% if row.campaign.is_active %}
+            <span class="badge-active">Активна</span>
+          {% else %}
+            <span class="badge-inactive">Выкл.</span>
+          {% endif %}
+        </td>
+        <td>
+          <button class="copy-btn"
+            onclick="navigator.clipboard.writeText('https://tlpn.shop{{ row.campaign.get_tracking_path }}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='📋 Копировать',1500)})">
+            📋 Копировать
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="color:#999;text-align:center;padding:40px">
+      Кампаний пока нет.
+      <a href="{% url 'admin:ads_adcampaign_add' %}">Создать первую →</a>
+    </p>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extrascripts %}
+<script>
+(function(){
+  var labels = {{ chart_labels_json|safe }};
+  var values = {{ chart_values_json|safe }};
+  var ctx = document.getElementById('clicksChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Клики',
+        data: values,
+        backgroundColor: 'rgba(74,124,89,0.25)',
+        borderColor: 'rgba(74,124,89,0.85)',
+        borderWidth: 1.5,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } } }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}
