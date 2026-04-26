@@ -18,20 +18,25 @@
           {% webp_best_url item.product.image 160 as cart_img_url %}
           <img src="{{ cart_img_url }}" alt="{{ item.product.name }}" class="cart-item__img" loading="lazy" decoding="async" width="80" height="80">
         {% else %}
-          <div style="width:80px;height:80px;background:var(--secondary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:32px;">🌱</div>
+          <div class="cart-item__img cart-item__img--placeholder">🌱</div>
         {% endif %}
-        <div>
-          <div class="cart-item__name">{{ item.product.name }}{% if item.age_label %} <span style="font-size:13px;font-weight:400;color:var(--muted-foreground)">({{ item.age_label }})</span>{% endif %}</div>
-          {% if item.product.category %}<div class="cart-item__cat">{{ item.product.category.name }}</div>{% endif %}
-          <div class="cart-item__price" id="price-{{ forloop.counter }}">{{ item.subtotal|floatformat:0 }} ₽</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-            <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', -1)">−</button>
-            <span id="qty-{{ forloop.counter }}">{{ item.qty }}</span>
-            <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', 1)">+</button>
+        <div class="cart-item__body">
+          <div>
+            <div class="cart-item__name">{{ item.product.name }}{% if item.age_label %} <span class="cart-item__age">({{ item.age_label }})</span>{% endif %}</div>
+            {% if item.product.category %}<div class="cart-item__cat">{{ item.product.category.name }}</div>{% endif %}
           </div>
-          <span class="cart-item__remove" onclick="removeItem({{ forloop.counter }}, '{{ item.cart_key }}')">Удалить</span>
+          <div class="cart-item__footer">
+            <div class="cart-item__qty">
+              <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', -1)">−</button>
+              <span id="qty-{{ forloop.counter }}" class="cart-item__qty-val">{{ item.qty }}</span>
+              <button class="qty-btn" onclick="updateQty({{ forloop.counter }}, '{{ item.cart_key }}', 1)">+</button>
+            </div>
+            <div class="cart-item__right">
+              <div class="cart-item__price" id="subtotal-{{ forloop.counter }}">{{ item.subtotal|floatformat:0 }} ₽</div>
+              <span class="cart-item__remove" onclick="removeItem({{ forloop.counter }}, '{{ item.cart_key }}')">Удалить</span>
+            </div>
+          </div>
         </div>
-        <div style="font-size:16px;font-weight:700;color:var(--primary);white-space:nowrap" id="subtotal-{{ forloop.counter }}">{{ item.subtotal|floatformat:0 }} ₽</div>
       </div>
       {% endfor %}
     </div>
@@ -79,7 +84,6 @@ async function updateQty(idx, cartKey, delta) {
     const data = await apiPost(URL_UPDATE, {cart_key: cartKey, qty: newQty});
     const subtotal = Math.round(prices[cartKey] * newQty);
     document.getElementById('subtotal-' + idx).textContent = subtotal.toLocaleString('ru') + ' ₽';
-    document.getElementById('price-' + idx).textContent    = subtotal.toLocaleString('ru') + ' ₽';
     document.getElementById('summaryTotal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
     document.getElementById('summaryFinal').textContent = parseInt(data.total).toLocaleString('ru') + ' ₽';
     document.querySelectorAll('.cart-count').forEach(b => {
