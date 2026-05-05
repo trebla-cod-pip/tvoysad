@@ -1,4 +1,5 @@
 import json
+import urllib.request
 
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -11,6 +12,50 @@ from rest_framework.response import Response
 
 from .models import Category, Product, ProductAgeVariant
 from .serializers import CategorySerializer, ProductDetailSerializer, ProductListSerializer
+
+
+def _send_order_notification(order, items):
+    """Отправляет уведомление о новом заказе в Telegram-чат администратора."""
+    from pages.models import SiteSettings
+    settings = SiteSettings.get()
+    token = settings.tg_bot_token.strip()
+    chat_id = settings.tg_admin_chat_id.strip()
+    if not token or not chat_id:
+        return
+
+    lines = [f'🛒 <b>Новый заказ #{order.id}</b>']
+    lines.append(f'👤 {order.name}')
+    if order.phone:
+        lines.append(f'📞 {order.phone}')
+    if order.email:
+        lines.append(f'✉️ {order.email}')
+    if order.delivery_address:
+        lines.append(f'📍 {order.delivery_address}')
+    if order.delivery_date:
+        date_str = order.delivery_date.strftime('%d.%m.%Y') if hasattr(order.delivery_date, 'strftime') else str(order.delivery_date)
+        time_str = f' {order.delivery_time}' if order.delivery_time else ''
+        lines.append(f'📅 {date_str}{time_str}')
+    lines.append('')
+    for item in items:
+        lines.append(f'• {item["product"].name} × {item["qty"]} = {item["subtotal"]} ₽')
+    lines.append('')
+    lines.append(f'💰 Итого: <b>{order.total_amount} ₽</b>')
+    payment_labels = {'card': 'Карта', 'sbp': 'СБП', 'cash': 'Наличные'}
+    lines.append(f'💳 Оплата: {payment_labels.get(order.payment_method, order.payment_method)}')
+    if order.comment:
+        lines.append(f'💬 {order.comment}')
+
+    text = '\n'.join(lines)
+    payload = json.dumps({'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'}).encode()
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=payload,
+        headers={'Content-Type': 'application/json'},
+    )
+    try:
+        urllib.request.urlopen(req, timeout=5)
+    except Exception:
+        pass
 
 
 def get_cart(request):
@@ -234,6 +279,7 @@ def checkout(request):
                 price=item['price'],
             )
         save_cart(request, {})
+        _send_order_notification(order, items)
         return redirect('order_success')
 
     return render(

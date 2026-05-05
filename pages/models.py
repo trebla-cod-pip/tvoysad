@@ -11,6 +11,19 @@ class SiteSettings(models.Model):
     address = models.CharField('Адрес питомника', max_length=200, default='Московская область, г. Сергиев Посад', blank=True)
     courier_price = models.PositiveIntegerField('Цена курьерской доставки (₽)', default=500)
 
+    tg_bot_token = models.CharField(
+        'Telegram Bot Token',
+        max_length=200,
+        blank=True,
+        help_text='Токен бота из @BotFather, например: 123456789:AAF...',
+    )
+    tg_admin_chat_id = models.CharField(
+        'Telegram Chat ID администратора',
+        max_length=50,
+        blank=True,
+        help_text='ID чата/пользователя для уведомлений о заказах. Узнать можно через @userinfobot.',
+    )
+
     class Meta:
         verbose_name = 'Настройки сайта'
         verbose_name_plural = 'Настройки сайта'
