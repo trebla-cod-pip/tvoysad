@@ -35,10 +35,6 @@
       {% if product.old_price %}<span class="product-card__price-old">{{ product.old_price|floatformat:0 }} ₽</span>{% endif %}
     </div>
   </div>
-  <div class="product-card__guarantees">
-    <div class="product-card__guarantee-row">🛡 Гарантия приживаемости 100%</div>
-    <div class="product-card__guarantee-row">📦 Бережная упаковка при доставке</div>
-  </div>
   <div class="product-card__footer">
     <button class="btn btn--primary btn--full" onclick="addToCart('{{ product.slug }}')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
