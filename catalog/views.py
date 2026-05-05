@@ -1,7 +1,10 @@
 import json
+import logging
 import urllib.request
 
 from django.db.models import Count, Q
+
+logger = logging.getLogger(__name__)
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -54,8 +57,8 @@ def _send_order_notification(order, items):
     )
     try:
         urllib.request.urlopen(req, timeout=5)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error('Telegram notification failed for order #%s: %s', order.id, e)
 
 
 def get_cart(request):
