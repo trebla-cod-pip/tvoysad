@@ -23,6 +23,13 @@ class SiteSettings(models.Model):
         blank=True,
         help_text='ID чата/пользователя для уведомлений о заказах. Узнать можно через @userinfobot.',
     )
+    tg_proxy_url = models.CharField(
+        'Прокси для Telegram (необязательно)',
+        max_length=300,
+        blank=True,
+        help_text='HTTP/HTTPS прокси, если сервер не может подключиться к Telegram напрямую. '
+                  'Формат: http://user:pass@host:port или socks5://host:port',
+    )
 
     class Meta:
         verbose_name = 'Настройки сайта'

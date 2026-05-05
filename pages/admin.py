@@ -23,7 +23,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('hero_image',),
         }),
         ('Telegram-уведомления', {
-            'fields': ('tg_bot_token', 'tg_admin_chat_id', 'tg_test_button'),
+            'fields': ('tg_bot_token', 'tg_admin_chat_id', 'tg_proxy_url', 'tg_test_button'),
             'description': (
                 'Укажите токен бота и Chat ID администратора, '
                 'чтобы получать уведомления о новых заказах в Telegram.'
@@ -55,6 +55,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         s = SiteSettings.get()
         token = s.tg_bot_token.strip()
         chat_id = s.tg_admin_chat_id.strip()
+        proxy_url = s.tg_proxy_url.strip()
         changelist_url = reverse('admin:pages_sitesettings_changelist')
 
         if not token:
@@ -64,11 +65,13 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             self.message_user(request, 'Поле «Telegram Chat ID администратора» не заполнено.', level=messages.ERROR)
             return HttpResponseRedirect(changelist_url)
 
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({'https': proxy_url, 'http': proxy_url})
+        ) if proxy_url else urllib.request.build_opener()
+
         # Проверяем токен
         try:
-            resp = urllib.request.urlopen(
-                f'https://api.telegram.org/bot{token}/getMe', timeout=10
-            )
+            resp = opener.open(f'https://api.telegram.org/bot{token}/getMe', timeout=10)
             bot = json.loads(resp.read()).get('result', {})
         except urllib.error.HTTPError as e:
             body = e.read().decode()
@@ -90,7 +93,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             headers={'Content-Type': 'application/json'},
         )
         try:
-            resp = urllib.request.urlopen(req, timeout=10)
+            resp = opener.open(req, timeout=10)
             data = json.loads(resp.read())
             if data.get('ok'):
                 self.message_user(

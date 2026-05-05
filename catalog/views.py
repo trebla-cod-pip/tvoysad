@@ -17,6 +17,26 @@ from .models import Category, Product, ProductAgeVariant
 from .serializers import CategorySerializer, ProductDetailSerializer, ProductListSerializer
 
 
+def _tg_send(token, payload, proxy_url='', error_label=''):
+    """Отправляет запрос к Telegram Bot API, опционально через прокси."""
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'},
+    )
+    if proxy_url:
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({'https': proxy_url, 'http': proxy_url})
+        )
+    else:
+        opener = urllib.request.build_opener()
+    try:
+        opener.open(req, timeout=5)
+    except Exception as e:
+        logger.error('Telegram send failed%s: %s', f' for {error_label}' if error_label else '', e)
+
+
 def _send_order_notification(order, items):
     """Отправляет уведомление о новом заказе в Telegram-чат администратора."""
     from pages.models import SiteSettings
@@ -49,16 +69,9 @@ def _send_order_notification(order, items):
         lines.append(f'💬 {order.comment}')
 
     text = '\n'.join(lines)
-    payload = json.dumps({'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'}).encode()
-    req = urllib.request.Request(
-        f'https://api.telegram.org/bot{token}/sendMessage',
-        data=payload,
-        headers={'Content-Type': 'application/json'},
-    )
-    try:
-        urllib.request.urlopen(req, timeout=5)
-    except Exception as e:
-        logger.error('Telegram notification failed for order #%s: %s', order.id, e)
+    proxy_url = settings.tg_proxy_url.strip()
+    _tg_send(token, {'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML'}, proxy_url,
+             error_label=f'order #{order.id}')
 
 
 def get_cart(request):
