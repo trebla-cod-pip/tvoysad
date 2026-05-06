@@ -106,19 +106,6 @@
         Купить саженец
       </button>
 
-      <div class="item-guarantees">
-        <div class="guarantee-row">
-          <span>🛡</span> <span>Гарантия приживаемости 100%</span>
-        </div>
-        <div class="guarantee-row">
-          <span>📦</span> <span>Бережная упаковка при доставке</span>
-        </div>
-        {% if product.stock < 10 %}
-        <div class="guarantee-row" style="color:var(--destructive)">
-          <span>⚠️</span> <span>Осталось {{ product.stock }} шт — торопитесь!</span>
-        </div>
-        {% endif %}
-      </div>
     </div>
   </div>
 
